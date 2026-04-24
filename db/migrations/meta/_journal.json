@@ -8,6 +8,13 @@
       "when": 1777027145999,
       "tag": "0000_spooky_valeria_richards",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777027882665,
+      "tag": "0001_moaning_mesmero",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,4 @@
-import type { RenderedDay } from '@/lib/calendar-engine'
+import type { RenderedDay, RenderedSlot } from '@/lib/calendar-engine'
 import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 
@@ -10,10 +10,59 @@ const EVENT_COLORS: Record<string, string> = {
   scrutini: '#4A148C',
 }
 
+// Triennio break times — show a divider after ora 3 and ora 5
+const BREAKS: Record<number, string> = {
+  3: '10:45–11:00',
+  5: '13:00–13:15',
+}
+
 function shortName(name: string): string {
   const parts = name.split(' ')
   if (parts.length === 1) return name
   return `${parts.slice(0, -1).join(' ')} ${parts.at(-1)![0]}.`
+}
+
+function SlotRow({ s }: { s: RenderedSlot }) {
+  if (s.kind === 'padel') {
+    return (
+      <div className="bg-orange-50 border border-dashed border-orange-300 rounded-lg px-3 py-2">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-stone-500 min-w-[3rem]">{s.hour}ª</span>
+          <span className="bg-orange-600 text-white px-2 py-0.5 rounded text-sm font-bold">🎾 PADEL</span>
+          <span className="text-sm text-orange-900 line-through opacity-70">{s.class?.code}</span>
+        </div>
+        <div className="text-xs text-orange-900 italic mt-1 ml-12">Classe al centro padel · no lezione</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-stone-500 min-w-[3rem]">{s.hour}ª</span>
+        <span
+          className="text-white px-2 py-0.5 rounded text-sm font-bold"
+          style={{ background: s.class?.color }}
+        >
+          {s.class?.code}
+        </span>
+        {s.class?.room && (
+          <span className="text-xs text-stone-400 font-mono">
+            {s.class.floor?.[0]}·{s.class.room}
+          </span>
+        )}
+      </div>
+      {s.coteachers.length > 0 && (
+        <div className="flex flex-wrap gap-1 ml-14">
+          {s.coteachers.map((c, i) => (
+            <span key={i} className="bg-stone-100 border border-stone-200 text-stone-600 text-xs px-2 py-0.5 rounded">
+              {shortName(c.name)}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function DayCard({ day }: { day: RenderedDay }) {
@@ -55,39 +104,18 @@ export function DayCard({ day }: { day: RenderedDay }) {
               </div>
             )}
             <div className="space-y-1.5">
-              {day.slots.map(s =>
-                s.kind === 'padel' ? (
-                  <div key={s.hour} className="bg-orange-50 border border-dashed border-orange-300 rounded-lg px-3 py-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-stone-500 min-w-[3rem]">{s.hour}ª</span>
-                      <span className="bg-orange-600 text-white px-2 py-0.5 rounded text-sm font-bold">🎾 PADEL</span>
-                      <span className="text-sm text-orange-900 line-through opacity-70">{s.class?.code}</span>
+              {day.slots.map((s, idx) => (
+                <div key={s.hour}>
+                  <SlotRow s={s} />
+                  {BREAKS[s.hour] && idx < day.slots.length - 1 && (
+                    <div className="flex items-center gap-2 my-1.5">
+                      <div className="flex-1 border-t border-dashed border-stone-200" />
+                      <span className="text-[10px] text-stone-400 font-medium">☕ {BREAKS[s.hour]}</span>
+                      <div className="flex-1 border-t border-dashed border-stone-200" />
                     </div>
-                    <div className="text-xs text-orange-900 italic mt-1 ml-12">Classe al centro padel · no lezione</div>
-                  </div>
-                ) : (
-                  <div key={s.hour} className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-stone-500 min-w-[3rem]">{s.hour}ª</span>
-                      <span
-                        className="text-white px-2 py-0.5 rounded text-sm font-bold"
-                        style={{ background: s.class?.color }}
-                      >
-                        {s.class?.code}
-                      </span>
-                    </div>
-                    {s.coteachers.length > 0 && (
-                      <div className="flex flex-wrap gap-1 ml-14">
-                        {s.coteachers.map((c, i) => (
-                          <span key={i} className="bg-stone-100 border border-stone-200 text-stone-600 text-xs px-2 py-0.5 rounded">
-                            {shortName(c.name)}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              )}
+                  )}
+                </div>
+              ))}
             </div>
           </>
         )}

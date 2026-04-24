@@ -1,6 +1,6 @@
 import { format, eachDayOfInterval, parseISO } from 'date-fns'
 
-export type ClassInfo = { id: string; code: string; color: string }
+export type ClassInfo = { id: string; code: string; color: string; room: string | null; floor: string | null }
 
 export type CalendarInput = {
   classes: ClassInfo[]

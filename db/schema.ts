@@ -6,6 +6,8 @@ export const classes = pgTable('classes', {
   code: text('code').notNull().unique(),
   color: text('color').notNull(),
   subject: text('subject'),
+  room: text('room'),
+  floor: text('floor'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 })
 

@@ -19,7 +19,7 @@ export default async function HomePage() {
 
   const days = renderDays(
     {
-      classes: classesData.map(c => ({ id: c.id, code: c.code, color: c.color })),
+      classes: classesData.map(c => ({ id: c.id, code: c.code, color: c.color, room: c.room, floor: c.floor })),
       weeklySlots: weeklyData.map(w => ({ weekday: w.weekday, hour: w.hour, classId: w.classId! })),
       coteachers: coteachersData.map(c => ({
         classId: c.classId!, weekday: c.weekday!, hour: c.hour!, teacherName: c.teacherName, role: c.role,

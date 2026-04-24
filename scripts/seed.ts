@@ -11,13 +11,13 @@ async function seed() {
 
   console.log('📚 Classi...')
   const classData = [
-    { code: '5CT',  color: '#B5651D', subject: 'TPSEE' },
-    { code: '5ET',  color: '#C0392B', subject: 'TPSEE' },
-    { code: '4AT',  color: '#27AE60', subject: 'TPSEE' },
-    { code: '3CT',  color: '#7D3C98', subject: 'Elettrotecnica' },
-    { code: '3GTB', color: '#16A085', subject: 'Elettrotecnica' },
-    { code: '4CT',  color: '#2874A6', subject: 'TPSEE' },
-    { code: '4DT',  color: '#AD1457', subject: 'TPSEE' },
+    { code: '5CT',  color: '#B5651D', subject: 'TPSEE',          room: '107',  floor: 'Primo' },
+    { code: '5ET',  color: '#C0392B', subject: 'TPSEE',          room: '306',  floor: 'Terzo' },
+    { code: '4AT',  color: '#27AE60', subject: 'TPSEE',          room: '104b', floor: 'Primo' },
+    { code: '3CT',  color: '#7D3C98', subject: 'Elettrotecnica', room: '106',  floor: 'Primo' },
+    { code: '3GTB', color: '#16A085', subject: 'Elettrotecnica', room: '205',  floor: 'Secondo' },
+    { code: '4CT',  color: '#2874A6', subject: 'TPSEE',          room: '110',  floor: 'Primo' },
+    { code: '4DT',  color: '#AD1457', subject: 'TPSEE',          room: '203',  floor: 'Secondo' },
   ]
   const insertedClasses = await db.insert(classes).values(classData).returning()
   const byCode = Object.fromEntries(insertedClasses.map(c => [c.code, c.id]))
