@@ -97,25 +97,17 @@ async function seed() {
   ])
 
   console.log('🎾 Progetto Racchette in Classe (PADEL)...')
-  const padelDates = [
-    '2026-04-27', '2026-05-04', '2026-05-11', '2026-05-18',
-    '2026-04-30', '2026-05-07', '2026-05-14', '2026-05-21',
-    '2026-05-08', '2026-05-15', '2026-05-22', '2026-05-29',
+  // Calendario aggiornato: giovedì eliminati (4DT non partecipa), lunedì 4CT e venerdì 4AT invariati
+  const padelOverrides: Array<{ date: string, hour: number, classId: string }> = [
+    ...['2026-04-27', '2026-05-04', '2026-05-11', '2026-05-18'].flatMap(d => [
+      { date: d, hour: 5, classId: byCode['4CT'] },
+      { date: d, hour: 6, classId: byCode['4CT'] },
+    ]),
+    ...['2026-05-08', '2026-05-15', '2026-05-22', '2026-05-29'].flatMap(d => [
+      { date: d, hour: 2, classId: byCode['4AT'] },
+      { date: d, hour: 3, classId: byCode['4AT'] },
+    ]),
   ]
-  const padelOverrides: Array<{ date: string, hour: number, classId: string }> = []
-  for (const d of padelDates) {
-    const dayOfWeek = new Date(d + 'T00:00:00Z').getUTCDay()
-    if (dayOfWeek === 1) {
-      padelOverrides.push({ date: d, hour: 5, classId: byCode['4CT'] })
-      padelOverrides.push({ date: d, hour: 6, classId: byCode['4CT'] })
-    } else if (dayOfWeek === 4) {
-      padelOverrides.push({ date: d, hour: 5, classId: byCode['4DT'] })
-      padelOverrides.push({ date: d, hour: 6, classId: byCode['4DT'] })
-    } else if (dayOfWeek === 5) {
-      padelOverrides.push({ date: d, hour: 2, classId: byCode['4AT'] })
-      padelOverrides.push({ date: d, hour: 3, classId: byCode['4AT'] })
-    }
-  }
   await db.insert(dayOverrides).values(
     padelOverrides.map(p => ({
       date: p.date, hour: p.hour, kind: 'padel', classId: p.classId,
