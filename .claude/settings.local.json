@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -v)",
+      "Bash(pnpm -v)",
+      "Bash(mv claude.md /tmp/claude.md)",
+      "Bash(pnpm create *)",
+      "Bash(mv /tmp/claude.md .)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm db:generate *)",
+      "Bash(pnpm db:migrate *)",
+      "Bash(pnpm db:seed *)",
+      "Bash(pnpm exec *)",
+      "Bash(pnpm dev *)",
+      "Read(//tmp/**)",
+      "Bash(curl *)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(taskkill //PID 3336 //F)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
+    ]
+  }
+}

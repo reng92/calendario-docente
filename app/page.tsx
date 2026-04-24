@@ -1,7 +1,7 @@
 import { db } from '@/db'
 import { classes, weeklySlots, coteachers, holidays, dayOverrides, meetings } from '@/db/schema'
 import { renderDays } from '@/lib/calendar-engine'
-import { DayCard } from '@/components/DayCard'
+import { CalendarView } from '@/components/CalendarView'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -47,9 +47,7 @@ export default async function HomePage() {
           Modifica
         </Link>
       </header>
-      <div className="p-3 space-y-2">
-        {days.map(d => <DayCard key={d.date} day={d} />)}
-      </div>
+      <CalendarView days={days} />
     </main>
   )
 }
