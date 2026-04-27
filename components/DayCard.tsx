@@ -10,10 +10,19 @@ const EVENT_COLORS: Record<string, string> = {
   scrutini: '#4A148C',
 }
 
-// Triennio break times — show a divider after ora 3 and ora 5
 const BREAKS: Record<number, string> = {
   3: '10:45–11:00',
   5: '13:00–13:15',
+}
+
+const HOUR_TIMES: Record<number, string> = {
+  1: '8:00–9:00',
+  2: '9:00–10:00',
+  3: '10:00–11:00',
+  4: '11:00–12:00',
+  5: '12:00–13:00',
+  6: '13:00–14:00',
+  7: '14:00–15:00',
 }
 
 function shortName(name: string): string {
@@ -27,7 +36,10 @@ function SlotRow({ s }: { s: RenderedSlot }) {
     return (
       <div className="bg-orange-50 border border-dashed border-orange-300 rounded-lg px-3 py-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-stone-500 min-w-[3rem]">{s.hour}ª</span>
+          <div className="min-w-[5rem] text-xs text-stone-500 leading-tight">
+            <div>{s.hour}ª ora</div>
+            <div className="text-[10px] text-stone-400">{HOUR_TIMES[s.hour]}</div>
+          </div>
           <span className="bg-orange-600 text-white px-2 py-0.5 rounded text-sm font-bold">🎾 PADEL</span>
           <span className="text-sm text-orange-900 line-through opacity-70">{s.class?.code}</span>
         </div>
@@ -39,7 +51,10 @@ function SlotRow({ s }: { s: RenderedSlot }) {
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-2">
-        <span className="text-xs text-stone-500 min-w-[3rem]">{s.hour}ª</span>
+        <div className="min-w-[5rem] text-xs text-stone-500 leading-tight">
+          <div>{s.hour}ª ora</div>
+          <div className="text-[10px] text-stone-400">{HOUR_TIMES[s.hour]}</div>
+        </div>
         <span
           className="text-white px-2 py-0.5 rounded text-sm font-bold"
           style={{ background: s.class?.color }}
