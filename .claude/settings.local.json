@@ -18,7 +18,9 @@
       "Bash(taskkill //PID 3336 //F)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(pnpm tsx *)",
+      "Bash(git commit *)"
     ]
   }
 }
