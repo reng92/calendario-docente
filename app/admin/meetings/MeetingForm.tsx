@@ -36,8 +36,14 @@ export function MeetingForm() {
       </div>
       <input name="title" required placeholder="Titolo" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm" />
       <div className="grid grid-cols-2 gap-2">
-        <input name="startTime" type="time" className="rounded-lg border border-stone-300 px-3 py-2 text-sm" />
-        <input name="endTime" type="time" className="rounded-lg border border-stone-300 px-3 py-2 text-sm" />
+        <div className="space-y-1">
+          <label className="text-xs text-stone-500 font-medium">Inizio</label>
+          <input name="startTime" type="time" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm" />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs text-stone-500 font-medium">Fine</label>
+          <input name="endTime" type="time" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm" />
+        </div>
       </div>
       <textarea name="notes" placeholder="Note (opzionale)" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm" rows={2} />
       <button type="submit" disabled={pending} className="w-full rounded-lg bg-stone-900 text-white py-2 font-semibold disabled:opacity-50">

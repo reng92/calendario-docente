@@ -21,6 +21,24 @@ export async function createMeeting(data: {
   revalidatePath('/admin/meetings')
 }
 
+export async function updateMeeting(id: string, data: {
+  date: string; startTime?: string; endTime?: string;
+  kind: string; title: string; notes?: string;
+}) {
+  await db.update(meetings)
+    .set({
+      date: data.date,
+      startTime: data.startTime || null,
+      endTime: data.endTime || null,
+      kind: data.kind,
+      title: data.title,
+      notes: data.notes || null,
+    })
+    .where(eq(meetings.id, id))
+  revalidatePath('/')
+  revalidatePath('/admin/meetings')
+}
+
 export async function deleteMeeting(id: string) {
   await db.delete(meetings).where(eq(meetings.id, id))
   revalidatePath('/')
