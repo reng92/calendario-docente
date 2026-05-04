@@ -44,9 +44,14 @@ export default async function HomePage() {
             <h1 className="text-lg font-bold">Calendario impegni</h1>
             <p className="text-xs opacity-70">IIS Einstein-Bachelet · Via Pasquale II, Roma</p>
           </div>
-          <Link href="/admin" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-            Modifica
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/docenti" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+              Docenti
+            </Link>
+            <Link href="/admin" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+              Modifica
+            </Link>
+          </div>
         </div>
       </header>
       <div className="max-w-xl mx-auto md:max-w-none md:px-2 lg:px-4">
