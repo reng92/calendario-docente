@@ -29,7 +29,7 @@ export default async function HomePage() {
         date: o.date, hour: o.hour, kind: o.kind, classId: o.classId, note: o.note,
       })),
       meetings: meetingsData.map(m => ({
-        id: m.id, date: m.date, startTime: m.startTime, kind: m.kind, title: m.title, notes: m.notes,
+        id: m.id, date: m.date, startTime: m.startTime, endTime: m.endTime, kind: m.kind, title: m.title, notes: m.notes,
       })),
     },
     '2026-04-20',

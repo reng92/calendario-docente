@@ -157,8 +157,11 @@ export function WeekGrid({ week }: { week: RenderedDay[] }) {
                     }}
                   >
                     <div className="truncate">{m.title}</div>
-                    {m.startTime && (
-                      <div className="opacity-60">{m.startTime.slice(0, 5)}</div>
+                    {(m.startTime || m.endTime) && (
+                      <div className="opacity-60">
+                        {m.startTime?.slice(0, 5)}
+                        {m.endTime && `–${m.endTime.slice(0, 5)}`}
+                      </div>
                     )}
                   </div>
                 ))}

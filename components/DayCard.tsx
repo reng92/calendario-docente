@@ -147,8 +147,11 @@ export function DayCard({ day }: { day: RenderedDay }) {
                 <div className="font-bold text-sm" style={{ color: EVENT_COLORS[m.kind] ?? '#444' }}>
                   {m.title}
                 </div>
-                {m.startTime && (
-                  <div className="text-xs text-stone-500">dalle {m.startTime.slice(0, 5)}</div>
+                {(m.startTime || m.endTime) && (
+                  <div className="text-xs text-stone-500">
+                    {m.startTime && `dalle ${m.startTime.slice(0, 5)}`}
+                    {m.endTime && ` alle ${m.endTime.slice(0, 5)}`}
+                  </div>
                 )}
                 {m.notes && (
                   <div className="text-xs text-amber-800 bg-amber-50 mt-1 px-2 py-1 rounded">⚠️ {m.notes}</div>

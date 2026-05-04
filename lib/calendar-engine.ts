@@ -8,7 +8,7 @@ export type CalendarInput = {
   coteachers: Array<{ classId: string; weekday: number; hour: number; teacherName: string; role: string | null }>
   holidays: Array<{ date: string; label: string }>
   dayOverrides: Array<{ date: string; hour: number | null; kind: string; classId: string | null; note: string | null }>
-  meetings: Array<{ id: string; date: string; startTime: string | null; kind: string; title: string; notes: string | null }>
+  meetings: Array<{ id: string; date: string; startTime: string | null; endTime: string | null; kind: string; title: string; notes: string | null }>
 }
 
 export type RenderedSlot = {
@@ -25,7 +25,7 @@ export type RenderedDay = {
   isHoliday: boolean
   holidayLabel: string | null
   slots: RenderedSlot[]
-  meetings: Array<{ id: string; startTime: string | null; kind: string; title: string; notes: string | null }>
+  meetings: Array<{ id: string; startTime: string | null; endTime: string | null; kind: string; title: string; notes: string | null }>
 }
 
 export function renderDays(input: CalendarInput, from: string, to: string): RenderedDay[] {
