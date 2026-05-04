@@ -37,17 +37,21 @@ export default async function HomePage() {
   )
 
   return (
-    <main className="max-w-xl mx-auto pb-24">
-      <header className="sticky top-0 bg-stone-900 text-white p-4 z-10 flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-bold">Calendario impegni</h1>
-          <p className="text-xs opacity-70">IIS Einstein-Bachelet · Via Pasquale II, Roma</p>
+    <main className="pb-24">
+      <header className="sticky top-0 bg-stone-900 text-white z-10">
+        <div className="max-w-xl mx-auto md:max-w-none md:px-6 lg:px-8 py-3 px-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-lg font-bold">Calendario impegni</h1>
+            <p className="text-xs opacity-70">IIS Einstein-Bachelet · Via Pasquale II, Roma</p>
+          </div>
+          <Link href="/admin" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+            Modifica
+          </Link>
         </div>
-        <Link href="/admin" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-          Modifica
-        </Link>
       </header>
-      <CalendarView days={days} />
+      <div className="max-w-xl mx-auto md:max-w-none md:px-2 lg:px-4">
+        <CalendarView days={days} />
+      </div>
     </main>
   )
 }
