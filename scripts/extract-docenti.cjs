@@ -1,7 +1,5 @@
 const fs = require('fs')
 
-// Column centers from the PDF header row (x positions of hour numbers)
-// Mon h1-7, Tue h1-7, Wed h1-6, Thu h1-7, Fri h1-6
 const COLUMNS = [
   { x: 151, day: 0, hour: 1 }, { x: 171, day: 0, hour: 2 }, { x: 192, day: 0, hour: 3 },
   { x: 212, day: 0, hour: 4 }, { x: 233, day: 0, hour: 5 }, { x: 253, day: 0, hour: 6 },
@@ -17,7 +15,11 @@ const COLUMNS = [
   { x: 708, day: 4, hour: 1 }, { x: 728, day: 4, hour: 2 }, { x: 748, day: 4, hour: 3 },
   { x: 769, day: 4, hour: 4 }, { x: 790, day: 4, hour: 5 }, { x: 811, day: 4, hour: 6 },
 ]
-const COL_TOLERANCE = 13  // snap tolerance in px
+const COL_TOLERANCE = 15
+const ROW_TOLERANCE = 5
+
+// Matches both standard class codes (3CT, 5FT) and special codes (EAUT, BAUT)
+const CODE_RE = /^\d[A-Z]{1,4}$|^[A-Z]{3,5}$/
 
 function snapToColumn(x) {
   let best = null, bestDist = Infinity
@@ -28,13 +30,58 @@ function snapToColumn(x) {
   return bestDist <= COL_TOLERANCE ? best : null
 }
 
+// Extract all class codes from a cell string, handling:
+// 1. Single code: "3CT"
+// 2. Space-separated: "3GTB 5FT"
+// 3. No-space concatenation of equal-length codes: "BAUTBAUTBAUT", "EAUTEAUT"
+function extractCodes(str) {
+  const codes = []
+  for (const part of str.split(' ').filter(p => p)) {
+    if (CODE_RE.test(part)) {
+      codes.push(part)
+    } else if (part.length >= 6) {
+      // Try splitting into equal-length chunks (no-space concatenation)
+      let found = false
+      for (const len of [4, 3, 5]) {
+        if (part.length % len === 0) {
+          const chunks = []
+          for (let i = 0; i < part.length; i += len) chunks.push(part.slice(i, i + len))
+          if (chunks.every(c => CODE_RE.test(c))) {
+            codes.push(...chunks)
+            found = true
+            break
+          }
+        }
+      }
+      if (!found) {
+        // Mixed lengths: scan greedily for longest matching code at each position
+        let i = 0
+        while (i < part.length) {
+          let matched = false
+          for (const len of [5, 4, 3]) {
+            const chunk = part.slice(i, i + len)
+            if (chunk.length === len && CODE_RE.test(chunk)) {
+              codes.push(chunk)
+              i += len
+              matched = true
+              break
+            }
+          }
+          if (!matched) i++
+        }
+      }
+    }
+  }
+  return codes
+}
+
 async function main() {
   const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
   const pdfPath = 'C:/Users/Ren92/Downloads/orario_docenti_completo_dal_07-01-2026 (1).pdf'
   const data = new Uint8Array(fs.readFileSync(pdfPath))
   const pdf = await (await pdfjsLib.getDocument({ data })).promise
 
-  const teachers = {}  // name → { 0: { 1: 'class', ... }, 1: {...}, ... }
+  const teachers = {}
 
   for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
     const page = await pdf.getPage(pageNum)
@@ -49,37 +96,40 @@ async function main() {
       }))
       .filter(i => i.str)
 
-    // Group by Y row (±3px tolerance)
     const rows = new Map()
     for (const item of items) {
       let matched = false
       for (const [ky] of rows) {
-        if (Math.abs(ky - item.y) <= 3) { rows.get(ky).push(item); matched = true; break }
+        if (Math.abs(ky - item.y) <= ROW_TOLERANCE) { rows.get(ky).push(item); matched = true; break }
       }
       if (!matched) rows.set(item.y, [item])
     }
 
-    // Process each row: find teacher name (x < 140) and class cells
     for (const [, rowItems] of rows) {
       const nameItem = rowItems.find(i => i.x < 140 && i.str.length > 3)
       if (!nameItem) continue
 
       const name = nameItem.str
+      if (/^(DOCENTI|Lunedì|Martedì|Mercoledì|Giovedì|Venerdì|\d+$)/i.test(name)) continue
+      if (name.includes('_')) continue
+      if (/^[A-Z0-9]{1,8}$/.test(name)) continue
       if (!teachers[name]) teachers[name] = { 0: {}, 1: {}, 2: {}, 3: {}, 4: {} }
 
       for (const item of rowItems) {
-        if (item.x < 140) continue  // skip name itself
+        if (item.x < 140) continue
         const col = snapToColumn(item.x)
         if (!col) continue
-        // Only store if looks like a class code (e.g. 4CT, 5BS, 1AT)
-        if (/^\d[A-Z]{1,4}$/.test(item.str)) {
-          teachers[name][col.day][col.hour] = item.str
+        const codes = extractCodes(item.str)
+        if (codes.length === 0) continue
+        const startIdx = COLUMNS.indexOf(col)
+        for (let i = 0; i < codes.length; i++) {
+          const targetCol = COLUMNS[startIdx + i]
+          if (targetCol) teachers[name][targetCol.day][targetCol.hour] = codes[i]
         }
       }
     }
   }
 
-  // Convert to sorted array
   const result = Object.entries(teachers)
     .map(([name, schedule]) => ({ name, schedule }))
     .sort((a, b) => a.name.localeCompare(b.name, 'it'))
@@ -90,10 +140,9 @@ async function main() {
   )
   console.log(`✅ Estratti ${result.length} docenti → public/docenti.json`)
 
-  // Preview first 3
+  const DAYS = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven']
   result.slice(0, 3).forEach(t => {
     console.log('\n' + t.name)
-    const DAYS = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven']
     for (let d = 0; d < 5; d++) {
       const slots = Object.entries(t.schedule[d]).map(([h, c]) => `${h}ª:${c}`).join(' ')
       if (slots) console.log(`  ${DAYS[d]}: ${slots}`)

@@ -48,6 +48,29 @@ function SlotRow({ s }: { s: RenderedSlot }) {
     )
   }
 
+  if (s.kind === 'cover') {
+    return (
+      <div className="bg-blue-50 border border-dashed border-blue-300 rounded-lg px-3 py-2">
+        <div className="flex items-center gap-2">
+          <div className="min-w-[5rem] text-xs text-stone-500 leading-tight">
+            <div>{s.hour}ª ora</div>
+            <div className="text-[10px] text-stone-400">{HOUR_TIMES[s.hour]}</div>
+          </div>
+          <span className="bg-blue-700 text-white px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide">Supplenza</span>
+          {s.class && (
+            <span
+              className="text-white px-2 py-0.5 rounded text-sm font-bold"
+              style={{ background: s.class.color }}
+            >
+              {s.class.code}
+            </span>
+          )}
+        </div>
+        {s.note && <div className="text-xs text-blue-900 italic mt-1 ml-20">{s.note}</div>}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-2">
@@ -68,7 +91,7 @@ function SlotRow({ s }: { s: RenderedSlot }) {
         )}
       </div>
       {s.coteachers.length > 0 && (
-        <div className="flex flex-wrap gap-1 ml-14">
+        <div className="flex flex-wrap gap-1 ml-20">
           {s.coteachers.map((c, i) => (
             <span key={i} className="bg-stone-100 border border-stone-200 text-stone-600 text-xs px-2 py-0.5 rounded">
               {shortName(c.name)}

@@ -62,6 +62,23 @@ export function renderDays(input: CalendarInput, from: string, to: string): Rend
           coteachers: override ? [] : coteachersForSlot,
         })
       }
+
+      // Extra override slots (e.g. cover for a class/hour not in regular schedule)
+      for (const override of overridesByDate.get(iso) ?? []) {
+        if (override.classId == null || override.hour == null) continue
+        const alreadyHandled = input.weeklySlots.some(
+          s => s.weekday === weekday && s.hour === override.hour && s.classId === override.classId
+        )
+        if (alreadyHandled) continue
+        const klass = classById.get(override.classId) ?? null
+        slots.push({
+          hour: override.hour,
+          class: klass,
+          kind: override.kind as RenderedSlot['kind'],
+          note: override.note ?? null,
+          coteachers: [],
+        })
+      }
     }
 
     return {

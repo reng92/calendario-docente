@@ -46,12 +46,13 @@ export async function deleteMeeting(id: string) {
 }
 
 export async function createOverride(data: {
-  date: string; hour?: number; kind: string; note?: string;
+  date: string; hour?: number; kind: string; classId?: string; note?: string;
 }) {
   await db.insert(dayOverrides).values({
     date: data.date,
     hour: data.hour ?? null,
     kind: data.kind,
+    classId: data.classId || null,
     note: data.note || null,
   })
   revalidatePath('/')
