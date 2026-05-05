@@ -33,7 +33,7 @@ export default async function HomePage() {
       })),
     },
     '2026-04-20',
-    '2026-06-12'
+    '2026-06-30'
   )
 
   return (
