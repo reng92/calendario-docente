@@ -9,6 +9,7 @@ export type CalendarInput = {
   holidays: Array<{ date: string; label: string }>
   dayOverrides: Array<{ date: string; hour: number | null; kind: string; classId: string | null; note: string | null }>
   meetings: Array<{ id: string; date: string; startTime: string | null; endTime: string | null; kind: string; title: string; notes: string | null }>
+  lessonEndDate?: string
 }
 
 export type RenderedSlot = {
@@ -43,7 +44,7 @@ export function renderDays(input: CalendarInput, from: string, to: string): Rend
     const holidayLabel = holidayByDate.get(iso) ?? null
 
     const slots: RenderedSlot[] = []
-    if (!isHoliday && weekday <= 4) {
+    if (!isHoliday && weekday <= 4 && (!input.lessonEndDate || iso <= input.lessonEndDate)) {
       const slotsToday = input.weeklySlots.filter(s => s.weekday === weekday)
       for (const s of slotsToday) {
         const klass = classById.get(s.classId) ?? null

@@ -31,6 +31,7 @@ export default async function HomePage() {
       meetings: meetingsData.map(m => ({
         id: m.id, date: m.date, startTime: m.startTime, endTime: m.endTime, kind: m.kind, title: m.title, notes: m.notes,
       })),
+      lessonEndDate: '2026-06-08',
     },
     '2026-04-20',
     '2026-06-30'
