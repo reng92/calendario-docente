@@ -25,15 +25,15 @@ async function main() {
     console.log(`🗑️  Rimossi ${delMay.length} CdC generici maggio 2026`)
   }
 
-  // Inserisce CdC specifici maggio 2026 (circolare 1060188)
+  // Inserisce CdC specifici maggio 2026 (circolare n. 297 del 06-05-2026)
   const cdc = [
-    { date: '2026-05-11', startTime: '17:00:00', endTime: '17:45:00', code: '4AT' },
-    { date: '2026-05-12', startTime: '15:30:00', endTime: '16:15:00', code: '5CT' },
-    { date: '2026-05-12', startTime: '16:15:00', endTime: '17:00:00', code: '4CT' },
-    { date: '2026-05-12', startTime: '17:00:00', endTime: '17:45:00', code: '3CT' },
-    { date: '2026-05-13', startTime: '16:15:00', endTime: '17:00:00', code: '5ET' },
-    { date: '2026-05-13', startTime: '17:45:00', endTime: '18:30:00', code: '3GTB' },
-    { date: '2026-05-14', startTime: '16:15:00', endTime: '17:00:00', code: '4DT' },
+    { date: '2026-05-11', startTime: '17:00:00', endTime: '17:45:00', code: '4AT',  aula: '207' },
+    { date: '2026-05-12', startTime: '15:30:00', endTime: '16:15:00', code: '5CT',  aula: '207' },
+    { date: '2026-05-12', startTime: '16:15:00', endTime: '17:00:00', code: '4CT',  aula: '207' },
+    { date: '2026-05-12', startTime: '17:00:00', endTime: '17:45:00', code: '3CT',  aula: '207' },
+    { date: '2026-05-14', startTime: '16:15:00', endTime: '17:00:00', code: '4DT',  aula: '205' },
+    { date: '2026-05-15', startTime: '16:15:00', endTime: '17:00:00', code: '5ET',  aula: '207' },
+    { date: '2026-05-15', startTime: '17:45:00', endTime: '18:30:00', code: '3GTB', aula: '207' },
   ]
 
   await db.insert(meetings).values(
@@ -44,6 +44,7 @@ async function main() {
       kind: 'cdc',
       title: `Consiglio di classe — ${c.code}`,
       classId: byCode[c.code] ?? null,
+      location: `Aula ${c.aula}`,
       notes: 'Adozione libri di testo + andamento didattico',
     }))
   )
