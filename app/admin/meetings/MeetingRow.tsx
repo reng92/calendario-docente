@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { deleteMeeting, updateMeeting } from '../actions'
 
 const KIND_LABELS: Record<string, string> = {
@@ -27,6 +28,7 @@ const selectCls = 'w-full rounded-lg border border-stone-300 px-3 py-2 text-sm'
 export function MeetingRow({ m }: { m: Meeting }) {
   const [editing, setEditing] = useState(false)
   const [pending, setPending] = useState(false)
+  const router = useRouter()
 
   async function handleSave(formData: FormData) {
     setPending(true)
@@ -40,11 +42,13 @@ export function MeetingRow({ m }: { m: Meeting }) {
     })
     setPending(false)
     setEditing(false)
+    router.refresh()
   }
 
   async function handleDelete() {
     if (!confirm('Eliminare questo impegno?')) return
     await deleteMeeting(m.id)
+    router.refresh()
   }
 
   if (editing) {

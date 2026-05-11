@@ -115,6 +115,12 @@ async function seed() {
     }))
   )
 
+  console.log('🏛️ Assemblea sindacale 13 maggio...')
+  await db.insert(dayOverrides).values([
+    { date: '2026-05-13', hour: 1, kind: 'assembly', classId: byCode['5CT'], note: 'Assemblea sindacale – prime 2 ore' },
+    { date: '2026-05-13', hour: 2, kind: 'assembly', classId: byCode['5CT'], note: 'Assemblea sindacale – prime 2 ore' },
+  ])
+
   console.log('🏫 Impegni pomeridiani...')
   await db.insert(meetings).values([
     { date: '2026-05-05', kind: 'dipartimento', title: 'Riunione dipartimentale',
@@ -132,11 +138,17 @@ async function seed() {
     { date: '2026-05-15', kind: 'cdc', title: 'Consigli di classe', startTime: '15:00:00' },
     { date: '2026-05-18', kind: 'collegio', title: 'Collegio docenti',
       startTime: '15:00:00', endTime: '17:00:00' },
-    { date: '2026-06-08', kind: 'scrutini', title: 'Scrutini II quadrimestre', notes: 'Inizio' },
-    { date: '2026-06-09', kind: 'scrutini', title: 'Scrutini II quadrimestre' },
-    { date: '2026-06-10', kind: 'scrutini', title: 'Scrutini II quadrimestre' },
-    { date: '2026-06-11', kind: 'scrutini', title: 'Scrutini II quadrimestre' },
-    { date: '2026-06-12', kind: 'scrutini', title: 'Scrutini II quadrimestre', notes: 'Fine' },
+    { date: '2026-06-08', kind: 'scrutini', title: 'Scrutini II quadrimestre',
+      startTime: '14:15:00', endTime: '20:05:00',
+      notes: 'Tue classi: 5CT ore 17:35 · 5ET ore 18:40' },
+    { date: '2026-06-09', kind: 'scrutini', title: 'Scrutini II quadrimestre',
+      startTime: '08:00:00', endTime: '20:00:00',
+      notes: 'Tue classi: 3GTB ore 17:00 · 4DT ore 17:45' },
+    { date: '2026-06-10', kind: 'scrutini', title: 'Scrutini II quadrimestre',
+      startTime: '08:00:00', endTime: '19:15:00' },
+    { date: '2026-06-11', kind: 'scrutini', title: 'Scrutini II quadrimestre',
+      startTime: '08:00:00', endTime: '17:45:00',
+      notes: 'Tue classi: 3CT ore 13:15 · 4CT ore 14:00 · 4AT ore 14:45' },
   ])
 
   console.log('✅ Seed completato!')

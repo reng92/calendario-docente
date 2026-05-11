@@ -1,11 +1,13 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createHoliday } from '../actions'
 
 export function HolidayForm() {
   const [pending, setPending] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
+  const router = useRouter()
 
   async function onSubmit(formData: FormData) {
     setPending(true)
@@ -15,6 +17,7 @@ export function HolidayForm() {
     )
     setPending(false)
     formRef.current?.reset()
+    router.refresh()
   }
 
   return (

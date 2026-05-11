@@ -48,6 +48,32 @@ function SlotRow({ s }: { s: RenderedSlot }) {
     )
   }
 
+  if (s.kind === 'assembly' || s.kind === 'strike' || s.kind === 'custom') {
+    const configs: Record<string, { borderCls: string; bgCls: string; badgeBg: string; label: string }> = {
+      assembly: { borderCls: 'border-yellow-300', bgCls: 'bg-yellow-50', badgeBg: '#B45309', label: 'Assemblea' },
+      strike:   { borderCls: 'border-gray-300',   bgCls: 'bg-gray-50',   badgeBg: '#374151', label: 'Sciopero'  },
+      custom:   { borderCls: 'border-stone-300',  bgCls: 'bg-stone-50',  badgeBg: '#6B7280', label: 'Variazione' },
+    }
+    const cfg = configs[s.kind]
+    return (
+      <div className={`border border-dashed ${cfg.borderCls} ${cfg.bgCls} rounded-lg px-3 py-2`}>
+        <div className="flex items-center gap-2">
+          <div className="min-w-[5rem] text-xs text-stone-500 leading-tight">
+            <div>{s.hour}ª ora</div>
+            <div className="text-[10px] text-stone-400">{HOUR_TIMES[s.hour]}</div>
+          </div>
+          <span className="text-white px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide" style={{ background: cfg.badgeBg }}>
+            {cfg.label}
+          </span>
+          {s.class && (
+            <span className="text-sm line-through opacity-40" style={{ color: s.class.color }}>{s.class.code}</span>
+          )}
+        </div>
+        {s.note && <div className="text-xs text-stone-600 italic mt-1 ml-20">{s.note}</div>}
+      </div>
+    )
+  }
+
   if (s.kind === 'cover') {
     return (
       <div className="bg-blue-50 border border-dashed border-blue-300 rounded-lg px-3 py-2">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createOverride } from '../actions'
 
 type ClassOption = { id: string; code: string }
@@ -8,6 +9,7 @@ type ClassOption = { id: string; code: string }
 export function OverrideForm({ classes }: { classes: ClassOption[] }) {
   const [pending, setPending] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
+  const router = useRouter()
 
   async function onSubmit(formData: FormData) {
     setPending(true)
@@ -21,6 +23,7 @@ export function OverrideForm({ classes }: { classes: ClassOption[] }) {
     })
     setPending(false)
     formRef.current?.reset()
+    router.refresh()
   }
 
   return (

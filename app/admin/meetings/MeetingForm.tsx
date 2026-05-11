@@ -1,11 +1,13 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createMeeting } from '../actions'
 
 export function MeetingForm() {
   const [pending, setPending] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
+  const router = useRouter()
 
   async function onSubmit(formData: FormData) {
     setPending(true)
@@ -19,6 +21,7 @@ export function MeetingForm() {
     })
     setPending(false)
     formRef.current?.reset()
+    router.refresh()
   }
 
   return (
