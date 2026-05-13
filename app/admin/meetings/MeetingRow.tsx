@@ -22,8 +22,8 @@ type Meeting = {
   notes: string | null
 }
 
-const inputCls = 'w-full rounded-lg border border-stone-300 px-3 py-2 text-sm'
-const selectCls = 'w-full rounded-lg border border-stone-300 px-3 py-2 text-sm'
+const inputCls = 'w-full rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 px-3 py-2 text-sm'
+const selectCls = 'w-full rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 px-3 py-2 text-sm'
 
 export function MeetingRow({ m }: { m: Meeting }) {
   const [editing, setEditing] = useState(false)
@@ -53,7 +53,7 @@ export function MeetingRow({ m }: { m: Meeting }) {
 
   if (editing) {
     return (
-      <div className="bg-white border border-stone-300 rounded-2xl p-3">
+      <div className="bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-600 rounded-2xl p-3">
         <form action={handleSave} className="space-y-2">
           <div className="grid grid-cols-2 gap-2">
             <input name="date" type="date" defaultValue={m.date} required className={inputCls} />
@@ -104,7 +104,7 @@ export function MeetingRow({ m }: { m: Meeting }) {
             <button
               type="button"
               onClick={() => setEditing(false)}
-              className="rounded-lg border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-50"
+              className="rounded-lg border border-stone-300 dark:border-stone-600 px-4 py-2 text-sm font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800"
             >
               Annulla
             </button>
@@ -115,21 +115,21 @@ export function MeetingRow({ m }: { m: Meeting }) {
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-2xl p-3 flex items-start justify-between gap-2">
+    <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-2xl p-3 flex items-start justify-between gap-2">
       <div className="flex-1 min-w-0">
-        <div className="text-xs text-stone-500">
+        <div className="text-xs text-stone-500 dark:text-stone-400">
           {m.date}
           {m.startTime && ` · dalle ${m.startTime.slice(0, 5)}`}
           {m.endTime && ` alle ${m.endTime.slice(0, 5)}`}
         </div>
         <div className="font-bold">{m.title}</div>
-        <div className="text-xs text-stone-500">{KIND_LABELS[m.kind] ?? m.kind}</div>
+        <div className="text-xs text-stone-500 dark:text-stone-400">{KIND_LABELS[m.kind] ?? m.kind}</div>
         {m.notes && <div className="text-xs text-amber-700 mt-1">⚠️ {m.notes}</div>}
       </div>
       <div className="flex gap-3 shrink-0 pt-0.5">
         <button
           onClick={() => setEditing(true)}
-          className="text-stone-600 text-xs font-semibold hover:underline"
+          className="text-stone-600 dark:text-stone-300 text-xs font-semibold hover:underline"
         >
           Modifica
         </button>

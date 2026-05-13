@@ -78,7 +78,7 @@ export function CalendarView({ days }: { days: RenderedDay[] }) {
         {pastDays.length > 0 && (
           <button
             onClick={() => setShowPast(v => !v)}
-            className="w-full text-xs text-stone-500 hover:text-stone-700 py-2 flex items-center justify-center gap-1"
+            className="w-full text-xs text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 py-2 flex items-center justify-center gap-1"
           >
             {showPast ? '▲ Nascondi giorni passati' : `▼ Mostra ${pastDays.length} giorni passati`}
           </button>
@@ -91,20 +91,20 @@ export function CalendarView({ days }: { days: RenderedDay[] }) {
         {pastWeeks.length > 0 && (
           <button
             onClick={() => setShowPast(v => !v)}
-            className="text-xs text-stone-500 hover:text-stone-700 py-1 flex items-center gap-1"
+            className="text-xs text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 py-1 flex items-center gap-1"
           >
             {showPast ? '▲ Nascondi settimane passate' : `▼ Mostra ${pastWeeks.length} settimane passate`}
           </button>
         )}
         {byMonth.map(({ month, weeks }) => (
           <section key={month}>
-            <h2 className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-3 capitalize">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-3 capitalize">
               {month}
             </h2>
             <div className="space-y-3">
               {weeks.map(week => (
                 <div key={week[0].date}>
-                  <p className="text-[11px] text-stone-400 font-medium mb-1.5">{weekLabel(week)}</p>
+                  <p className="text-[11px] text-stone-400 dark:text-stone-500 font-medium mb-1.5">{weekLabel(week)}</p>
                   <div className="grid grid-cols-5 gap-2">
                     {week.map(day => <DayCard key={day.date} day={day} now={now} />)}
                   </div>

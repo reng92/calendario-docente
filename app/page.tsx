@@ -54,8 +54,11 @@ export default async function HomePage() {
           </div>
           <div className="flex gap-2 shrink-0 items-center">
             <PushSubscribeButton compact />
-            <Link href="/docenti" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-              Docenti
+            <Link href="/oggi" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+              Oggi
+            </Link>
+            <Link href="/circolari" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+              Circolari
             </Link>
             <Link href="/admin" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
               Modifica

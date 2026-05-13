@@ -32,15 +32,15 @@ export default async function OverridesPage() {
         </Link>
       </header>
       <div className="p-3 space-y-4">
-        <section className="bg-white border border-stone-200 rounded-2xl p-4">
+        <section className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-2xl p-4">
           <h2 className="font-bold mb-3">Nuova modifica</h2>
           <OverrideForm classes={classesData.map(c => ({ id: c.id, code: c.code }))} />
         </section>
         <section className="space-y-2">
           {rows.map(r => (
-            <div key={r.id} className="bg-white border border-stone-200 rounded-2xl p-3 flex items-start justify-between gap-2">
+            <div key={r.id} className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-2xl p-3 flex items-start justify-between gap-2">
               <div>
-                <div className="text-xs text-stone-500">
+                <div className="text-xs text-stone-500 dark:text-stone-400">
                   {r.date}
                   {r.hour != null && ` · ora ${r.hour}`}
                   {r.classId && ` · ${classById[r.classId] ?? ''}`}

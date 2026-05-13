@@ -19,7 +19,7 @@ export default async function MeetingsPage() {
         </Link>
       </header>
       <div className="p-3 space-y-4">
-        <section className="bg-white border border-stone-200 rounded-2xl p-4">
+        <section className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-2xl p-4">
           <h2 className="font-bold mb-3">Nuovo impegno</h2>
           <MeetingForm />
         </section>

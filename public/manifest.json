@@ -2,7 +2,7 @@
   "name": "Calendario docente",
   "short_name": "Calendario",
   "description": "Calendario impegni IIS Einstein-Bachelet",
-  "start_url": "/",
+  "start_url": "/oggi",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f4f1ec",
@@ -11,5 +11,28 @@
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Oggi",
+      "short_name": "Oggi",
+      "description": "Vista di oggi e prossimi giorni",
+      "url": "/oggi",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Calendario",
+      "short_name": "Calendario",
+      "description": "Calendario completo",
+      "url": "/",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Circolari",
+      "short_name": "Circolari",
+      "description": "Storico circolari e news",
+      "url": "/circolari",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }

@@ -16,12 +16,12 @@ export default function AdminHome() {
       </header>
       <div className="p-3 space-y-2">
         {sections.map(s => (
-          <Link key={s.href} href={s.href} className="block bg-white border border-stone-200 rounded-2xl px-4 py-3 hover:border-stone-400 transition">
+          <Link key={s.href} href={s.href} className="block bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-2xl px-4 py-3 hover:border-stone-400 dark:hover:border-stone-500 transition">
             <div className="font-bold">{s.label}</div>
-            <div className="text-xs text-stone-500">{s.desc}</div>
+            <div className="text-xs text-stone-500 dark:text-stone-400">{s.desc}</div>
           </Link>
         ))}
-        <p className="text-xs text-stone-400 px-1 pt-2">Per modificare orario settimanale, classi e compresenze usa <code>pnpm db:studio</code> in locale.</p>
+        <p className="text-xs text-stone-400 dark:text-stone-500 px-1 pt-2">Per modificare orario settimanale, classi e compresenze usa <code>pnpm db:studio</code> in locale.</p>
       </div>
     </main>
   )
