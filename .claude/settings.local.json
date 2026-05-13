@@ -20,7 +20,15 @@
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
       "Bash(pnpm tsx *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(python *)",
+      "Bash(node *)",
+      "PowerShell(node -e \"const fs=require\\('fs'\\);const d=JSON.parse\\(fs.readFileSync\\('public/docenti.json'\\)\\);for\\(const t of d\\){if\\(t.name.includes\\('Brutto'\\)\\){let n=0;for\\(const v of Object.values\\(t.schedule\\)\\)n+=Object.keys\\(v\\).length;console.log\\(t.name,n,'ore'\\);console.log\\(JSON.stringify\\(t.schedule,null,2\\)\\)}}\")",
+      "Bash(pnpm tsc *)",
+      "Bash(npx tsx *)",
+      "WebFetch(domain:www.atpromaistruzione.it)",
+      "mcp__plugin_supabase_supabase__list_projects",
+      "Bash(pnpm build *)"
     ]
   }
 }

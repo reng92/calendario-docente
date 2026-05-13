@@ -2,6 +2,7 @@ import { db } from '@/db'
 import { classes, weeklySlots, coteachers, holidays, dayOverrides, meetings } from '@/db/schema'
 import { renderDays } from '@/lib/calendar-engine'
 import { CalendarView } from '@/components/CalendarView'
+import { PushSubscribeButton } from '@/components/PushSubscribeButton'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -51,7 +52,8 @@ export default async function HomePage() {
             <h1 className="text-lg font-bold">Calendario impegni</h1>
             <p className="text-xs opacity-70">IIS Einstein-Bachelet · Via Pasquale II, Roma</p>
           </div>
-          <div className="flex gap-2 shrink-0">
+          <div className="flex gap-2 shrink-0 items-center">
+            <PushSubscribeButton compact />
             <Link href="/docenti" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
               Docenti
             </Link>
