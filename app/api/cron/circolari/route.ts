@@ -33,11 +33,8 @@ export async function POST(req: Request) {
     try {
       const feed = await rss.parseURL(source.url)
 
-      // Ordina per data decrescente (più recenti prima), poi prendi le prime 20
-      const items = [...feed.items]
-        .map(i => ({ ...i, _date: parseItemDate(i.pubDate) }))
-        .sort((a, b) => (b._date?.getTime() ?? 0) - (a._date?.getTime() ?? 0))
-        .slice(0, 20)
+      // Il feed RSS restituisce già gli item dalla più recente — non riordinare
+      const items = feed.items.slice(0, 20).map(i => ({ ...i, _date: parseItemDate(i.pubDate) }))
 
       // Trova le voci NON ancora viste
       type NewItem = { externalId: string; title: string; link: string; pubDate: Date | null }
