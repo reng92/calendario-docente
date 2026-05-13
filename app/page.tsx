@@ -37,15 +37,29 @@ export default async function HomePage() {
     '2026-06-30'
   )
 
+  const SUPPLENZA_END = '2026-06-11'
+  const todayIso = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome' }).format(new Date())
+  const remaining = days.filter(d => d.date >= todayIso && d.date <= SUPPLENZA_END)
+  const lessonDays = remaining.filter(d => d.slots.some(s => s.kind === 'lesson')).length
+  const scrutiniDays = remaining.filter(d => d.meetings.some(m => m.kind === 'scrutini')).length
+
   return (
     <main className="pb-24">
       <header className="sticky top-0 bg-stone-900 text-white z-10">
-        <div className="max-w-xl mx-auto md:max-w-none md:px-6 lg:px-8 py-3 px-4 flex items-center justify-between">
-          <div>
+        <div className="max-w-xl mx-auto md:max-w-none md:px-6 lg:px-8 py-3 px-4 flex items-center justify-between gap-3">
+          <div className="min-w-0">
             <h1 className="text-lg font-bold">Calendario impegni</h1>
             <p className="text-xs opacity-70">IIS Einstein-Bachelet · Via Pasquale II, Roma</p>
+            <p className="text-xs mt-1">
+              <span className="font-bold tabular-nums">{lessonDays}</span>
+              <span className="opacity-80"> lezioni</span>
+              <span className="opacity-50"> · </span>
+              <span className="font-bold tabular-nums">{scrutiniDays}</span>
+              <span className="opacity-80"> scrutini</span>
+              <span className="opacity-60"> alla fine supplenza (11 giu)</span>
+            </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             <Link href="/docenti" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
               Docenti
             </Link>
