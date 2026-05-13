@@ -6,6 +6,15 @@ import { sendPushToAll } from '@/lib/push'
 import { eq, and } from 'drizzle-orm'
 import Parser from 'rss-parser'
 
+function parseItemDate(raw: string | undefined): Date | null {
+  if (!raw) return null
+  // Italian format DD/MM/YYYY
+  const itMatch = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+  if (itMatch) return new Date(`${itMatch[3]}-${itMatch[2].padStart(2,'0')}-${itMatch[1].padStart(2,'0')}`)
+  const d = new Date(raw)
+  return isNaN(d.getTime()) ? null : d
+}
+
 const rss = new Parser({
   timeout: 15000,
   headers: { 'User-Agent': 'Mozilla/5.0 (compatible; CalendarioDocente/1.0)' },
@@ -49,8 +58,7 @@ export async function POST(req: Request) {
 
         if (existing) continue
 
-        const rawDate = item.pubDate ? new Date(item.pubDate) : null
-        const pubblicataIl = rawDate && !isNaN(rawDate.getTime()) ? rawDate : null
+        const pubblicataIl = parseItemDate(item.pubDate)
         const url = item.link ?? ''
 
         // Check keywords filter
