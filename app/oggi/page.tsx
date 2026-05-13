@@ -2,6 +2,7 @@ import { db } from '@/db'
 import { classes, weeklySlots, coteachers, holidays, dayOverrides, meetings } from '@/db/schema'
 import { renderDays } from '@/lib/calendar-engine'
 import Link from 'next/link'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import { format, parseISO, addDays } from 'date-fns'
 import { it } from 'date-fns/locale'
 
@@ -83,11 +84,12 @@ export default async function OggiPage() {
             <h1 className="text-lg font-bold">Oggi</h1>
             <p className="text-xs opacity-70 capitalize">{todayLabel}</p>
           </div>
-          <div className="flex gap-2 items-center">
-            <Link href="/circolari" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+          <div className="flex gap-1.5 items-center">
+            <ThemeToggle />
+            <Link href="/circolari" className="bg-white/10 hover:bg-white/20 text-white text-[11px] font-semibold px-2 py-1.5 rounded-full">
               Circolari
             </Link>
-            <Link href="/" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+            <Link href="/" className="bg-white/10 hover:bg-white/20 text-white text-[11px] font-semibold px-2 py-1.5 rounded-full">
               Calendario
             </Link>
           </div>

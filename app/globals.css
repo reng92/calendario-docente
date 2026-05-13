@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@variant dark (@media (prefers-color-scheme: dark));
+@variant dark (&:where(.dark, .dark *));
 
 body {
   font-family: Arial, Helvetica, sans-serif;
