@@ -52,46 +52,48 @@ export async function POST(req: Request) {
 
       if (newItems.length === 0) continue
 
-      // Notifica solo le più recenti (max 3 per fonte), marca le altre come viste silenziosamente
-      const MAX_NOTIFY = 3
-      for (let i = 0; i < newItems.length; i++) {
-        const item = newItems[i]
-        const externalId = item.externalId
-        const pubblicataIl = item.pubDate
-        const url = item.link
-
-        const keywords = source.keywords ?? []
-        const shouldNotify =
-          i < MAX_NOTIFY &&
-          (keywords.length === 0 || keywords.some(kw => item.title.toLowerCase().includes(kw.toLowerCase())))
-
+      // Marca tutte come viste
+      for (const item of newItems) {
         await db.insert(circolariSeen).values({
           sourceKey: source.key,
-          externalId,
+          externalId: item.externalId,
           titolo: item.title,
-          url,
-          pubblicataIl,
-          notificataIl: shouldNotify ? new Date() : null,
+          url: item.link,
+          pubblicataIl: item.pubDate,
+          notificataIl: null,
         })
-
-        if (!shouldNotify) continue
-
-        const dedupeKey = `circolare:${source.key}:${externalId}`
-        try {
-          await db.insert(notificationLog).values({ kind: 'circolare', dedupeKey })
-        } catch {
-          continue
-        }
-
-        await sendPushToAll({
-          title: `📢 ${source.label}`,
-          body: item.title,
-          url: url || '/',
-          tag: `circ-${source.key}-${externalId}`.slice(0, 64),
-        })
-
-        totalPushed++
       }
+
+      // Filtra per keywords e manda UNA SOLA notifica (la più recente che matcha)
+      const keywords = source.keywords ?? []
+      const toNotify = newItems.filter(item =>
+        keywords.length === 0 || keywords.some(kw => item.title.toLowerCase().includes(kw.toLowerCase()))
+      )
+      if (toNotify.length === 0) continue
+
+      const latest = toNotify[0] // già in ordine feed (più recente prima)
+      const body = toNotify.length > 1
+        ? `${latest.title} (+${toNotify.length - 1} altre)`
+        : latest.title
+
+      const dedupeKey = `circolare:${source.key}:${latest.externalId}`
+      try {
+        await db.insert(notificationLog).values({ kind: 'circolare', dedupeKey })
+      } catch {
+        continue
+      }
+
+      await db.update(circolariSeen)
+        .set({ notificataIl: new Date() })
+
+      await sendPushToAll({
+        title: `📢 ${source.label}`,
+        body,
+        url: latest.link || '/',
+        tag: `circ-${source.key}`,
+      })
+
+      totalPushed++
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       errors.push(`${source.key}: ${msg}`)
