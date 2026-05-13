@@ -3,7 +3,6 @@ import { classes, weeklySlots, coteachers, holidays, dayOverrides, meetings } fr
 import { renderDays } from '@/lib/calendar-engine'
 import { CalendarView } from '@/components/CalendarView'
 import { PushSubscribeButton } from '@/components/PushSubscribeButton'
-import { InstallButton } from '@/components/InstallButton'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -54,7 +53,6 @@ export default async function HomePage() {
             <p className="text-xs opacity-70">IIS Einstein-Bachelet · Via Pasquale II, Roma</p>
           </div>
           <div className="flex gap-2 shrink-0 items-center">
-            <InstallButton />
             <PushSubscribeButton compact />
             <Link href="/docenti" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
               Docenti

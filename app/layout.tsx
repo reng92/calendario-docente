@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister'
+import { InstallButton } from '@/components/InstallButton'
 
 export const metadata: Metadata = {
   title: 'Calendario docente',
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="bg-stone-100 antialiased">
         <ServiceWorkerRegister />
+        <InstallButton floatingFallback />
         {children}
       </body>
     </html>
