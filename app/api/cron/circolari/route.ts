@@ -6,7 +6,10 @@ import { sendPushToAll } from '@/lib/push'
 import { eq, and } from 'drizzle-orm'
 import Parser from 'rss-parser'
 
-const rss = new Parser({ timeout: 10000 })
+const rss = new Parser({
+  timeout: 15000,
+  headers: { 'User-Agent': 'Mozilla/5.0 (compatible; CalendarioDocente/1.0)' },
+})
 
 export async function POST(req: Request) {
   const authError = requireCronAuth(req)
@@ -19,6 +22,7 @@ export async function POST(req: Request) {
   }
 
   let totalPushed = 0
+  const errors: string[] = []
 
   for (const source of activeSources) {
     try {
@@ -84,9 +88,11 @@ export async function POST(req: Request) {
         totalPushed++
       }
     } catch (err) {
-      console.error(`Errore fetch source ${source.key}:`, err)
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`Errore fetch source ${source.key}:`, msg)
+      errors.push(`${source.key}: ${msg}`)
     }
   }
 
-  return NextResponse.json({ ok: true, pushed: totalPushed })
+  return NextResponse.json({ ok: true, pushed: totalPushed, errors })
 }
