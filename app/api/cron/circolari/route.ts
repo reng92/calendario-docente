@@ -40,7 +40,8 @@ export async function POST(req: Request) {
         .slice(0, 20)
 
       // Trova le voci NON ancora viste
-      const newItems: typeof items = []
+      type NewItem = { externalId: string; title: string; link: string; pubDate: Date | null }
+      const newItems: NewItem[] = []
       for (const item of items) {
         const externalId = item.guid ?? item.link ?? `${item.title}-${item.pubDate}`
         if (!externalId || !item.title) continue
@@ -49,7 +50,7 @@ export async function POST(req: Request) {
           .from(circolariSeen)
           .where(and(eq(circolariSeen.sourceKey, source.key), eq(circolariSeen.externalId, externalId)))
           .then(r => r[0])
-        if (!existing) newItems.push({ ...item, _externalId: externalId })
+        if (!existing) newItems.push({ externalId, title: item.title, link: item.link ?? '', pubDate: item._date })
       }
 
       if (newItems.length === 0) continue
@@ -57,20 +58,20 @@ export async function POST(req: Request) {
       // Notifica solo le più recenti (max 3 per fonte), marca le altre come viste silenziosamente
       const MAX_NOTIFY = 3
       for (let i = 0; i < newItems.length; i++) {
-        const item = newItems[i] as typeof newItems[0] & { _externalId: string }
-        const externalId = item._externalId
-        const pubblicataIl = item._date
-        const url = item.link ?? ''
+        const item = newItems[i]
+        const externalId = item.externalId
+        const pubblicataIl = item.pubDate
+        const url = item.link
 
         const keywords = source.keywords ?? []
         const shouldNotify =
           i < MAX_NOTIFY &&
-          (keywords.length === 0 || keywords.some(kw => item.title!.toLowerCase().includes(kw.toLowerCase())))
+          (keywords.length === 0 || keywords.some(kw => item.title.toLowerCase().includes(kw.toLowerCase())))
 
         await db.insert(circolariSeen).values({
           sourceKey: source.key,
           externalId,
-          titolo: item.title!,
+          titolo: item.title,
           url,
           pubblicataIl,
           notificataIl: shouldNotify ? new Date() : null,
@@ -87,7 +88,7 @@ export async function POST(req: Request) {
 
         await sendPushToAll({
           title: `📢 ${source.label}`,
-          body: item.title!,
+          body: item.title,
           url: url || '/',
           tag: `circ-${source.key}-${externalId}`.slice(0, 64),
         })
