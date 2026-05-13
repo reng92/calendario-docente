@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="bg-stone-100 antialiased">
         <ServiceWorkerRegister />
-        <InstallButton floatingFallback />
+        <InstallButton />
         {children}
       </body>
     </html>
