@@ -25,16 +25,28 @@ const HOUR_TIMES: Record<number, string> = {
   7: '14:00–15:00',
 }
 
+const SLOT_END_MIN: Record<number, number> = {
+  1: 9 * 60, 2: 10 * 60, 3: 11 * 60, 4: 12 * 60,
+  5: 13 * 60, 6: 14 * 60, 7: 15 * 60,
+}
+
+function timeToMin(t: string): number {
+  const [h, m] = t.split(':').map(Number)
+  return h * 60 + m
+}
+
 function shortName(name: string): string {
   const parts = name.split(' ')
   if (parts.length === 1) return name
   return `${parts.slice(0, -1).join(' ')} ${parts.at(-1)![0]}.`
 }
 
-function SlotRow({ s }: { s: RenderedSlot }) {
+function SlotRow({ s, isPast }: { s: RenderedSlot; isPast: boolean }) {
+  const pastCls = isPast ? 'opacity-40 grayscale' : ''
+
   if (s.kind === 'padel') {
     return (
-      <div className="bg-orange-50 border border-dashed border-orange-300 rounded-lg px-3 py-2">
+      <div className={`bg-orange-50 border border-dashed border-orange-300 rounded-lg px-3 py-2 ${pastCls}`}>
         <div className="flex items-center gap-2">
           <div className="min-w-[5rem] text-xs text-stone-500 leading-tight">
             <div>{s.hour}ª ora</div>
@@ -56,7 +68,7 @@ function SlotRow({ s }: { s: RenderedSlot }) {
     }
     const cfg = configs[s.kind]
     return (
-      <div className={`border border-dashed ${cfg.borderCls} ${cfg.bgCls} rounded-lg px-3 py-2`}>
+      <div className={`border border-dashed ${cfg.borderCls} ${cfg.bgCls} rounded-lg px-3 py-2 ${pastCls}`}>
         <div className="flex items-center gap-2">
           <div className="min-w-[5rem] text-xs text-stone-500 leading-tight">
             <div>{s.hour}ª ora</div>
@@ -76,7 +88,7 @@ function SlotRow({ s }: { s: RenderedSlot }) {
 
   if (s.kind === 'cover') {
     return (
-      <div className="bg-blue-50 border border-dashed border-blue-300 rounded-lg px-3 py-2">
+      <div className={`bg-blue-50 border border-dashed border-blue-300 rounded-lg px-3 py-2 ${pastCls}`}>
         <div className="flex items-center gap-2">
           <div className="min-w-[5rem] text-xs text-stone-500 leading-tight">
             <div>{s.hour}ª ora</div>
@@ -98,7 +110,7 @@ function SlotRow({ s }: { s: RenderedSlot }) {
   }
 
   return (
-    <div className="space-y-1">
+    <div className={`space-y-1 ${pastCls}`}>
       <div className="flex items-center gap-2">
         <div className="min-w-[5rem] text-xs text-stone-500 leading-tight">
           <div>{s.hour}ª ora</div>
@@ -129,12 +141,30 @@ function SlotRow({ s }: { s: RenderedSlot }) {
   )
 }
 
-export function DayCard({ day }: { day: RenderedDay }) {
+export function DayCard({ day, now }: { day: RenderedDay; now?: { date: string; minutes: number } }) {
   const date = parseISO(day.date)
   const dayNum = format(date, 'd')
   const weekdayName = format(date, 'EEEE', { locale: it })
   const monthName = format(date, 'MMMM', { locale: it })
   const isWeekend = day.weekday >= 5
+
+  const dayIsPast = !!now && day.date < now.date
+  const isToday = !!now && day.date === now.date
+
+  const isSlotPast = (hour: number): boolean => {
+    if (!now) return false
+    if (dayIsPast) return true
+    if (!isToday) return false
+    return now.minutes >= (SLOT_END_MIN[hour] ?? 0)
+  }
+  const isMeetingPast = (m: { startTime: string | null; endTime: string | null }): boolean => {
+    if (!now) return false
+    if (dayIsPast) return true
+    if (!isToday) return false
+    const end = m.endTime ?? m.startTime
+    if (!end) return false
+    return now.minutes >= timeToMin(end)
+  }
 
   const bgClass = day.isHoliday
     ? 'bg-red-50 border-red-200'
@@ -143,7 +173,14 @@ export function DayCard({ day }: { day: RenderedDay }) {
     : 'bg-white border-stone-200'
 
   return (
-    <article className={`rounded-2xl border ${bgClass} overflow-hidden`}>
+    <article className={`relative rounded-2xl border ${bgClass} overflow-hidden ${dayIsPast ? 'opacity-60 grayscale' : ''}`}>
+      {dayIsPast && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+          <span className="text-3xl md:text-2xl font-black text-stone-600/40 -rotate-12 tracking-widest border-4 border-stone-600/40 rounded-lg px-3 py-0.5 uppercase">
+            Passato
+          </span>
+        </div>
+      )}
       <header className="flex items-center gap-3 px-4 py-3 border-b border-stone-100">
         <div className="text-3xl font-extrabold tabular-nums">{dayNum}</div>
         <div>
@@ -170,7 +207,7 @@ export function DayCard({ day }: { day: RenderedDay }) {
             <div className="space-y-1.5">
               {day.slots.map((s, idx) => (
                 <div key={s.hour}>
-                  <SlotRow s={s} />
+                  <SlotRow s={s} isPast={isSlotPast(s.hour)} />
                   {BREAKS[s.hour] && idx < day.slots.length - 1 && (
                     <div className="flex items-center gap-2 my-1.5">
                       <div className="flex-1 border-t border-dashed border-stone-200" />
@@ -187,26 +224,29 @@ export function DayCard({ day }: { day: RenderedDay }) {
         {day.meetings.length > 0 && (
           <>
             <div className="text-xs font-bold uppercase tracking-wide text-stone-500 mt-3">🕒 Pomeriggio</div>
-            {day.meetings.map(m => (
-              <div
-                key={m.id}
-                className="rounded border-l-4 bg-stone-50 px-3 py-2"
-                style={{ borderColor: EVENT_COLORS[m.kind] ?? '#888' }}
-              >
-                <div className="font-bold text-sm" style={{ color: EVENT_COLORS[m.kind] ?? '#444' }}>
-                  {m.title}
-                </div>
-                {(m.startTime || m.endTime) && (
-                  <div className="text-xs text-stone-500">
-                    {m.startTime && `dalle ${m.startTime.slice(0, 5)}`}
-                    {m.endTime && ` alle ${m.endTime.slice(0, 5)}`}
+            {day.meetings.map(m => {
+              const past = isMeetingPast(m)
+              return (
+                <div
+                  key={m.id}
+                  className={`rounded border-l-4 bg-stone-50 px-3 py-2 ${past ? 'opacity-40 grayscale' : ''}`}
+                  style={{ borderColor: EVENT_COLORS[m.kind] ?? '#888' }}
+                >
+                  <div className="font-bold text-sm" style={{ color: EVENT_COLORS[m.kind] ?? '#444' }}>
+                    {m.title}
                   </div>
-                )}
-                {m.notes && (
-                  <div className="text-xs text-amber-800 bg-amber-50 mt-1 px-2 py-1 rounded">⚠️ {m.notes}</div>
-                )}
-              </div>
-            ))}
+                  {(m.startTime || m.endTime) && (
+                    <div className="text-xs text-stone-500">
+                      {m.startTime && `dalle ${m.startTime.slice(0, 5)}`}
+                      {m.endTime && ` alle ${m.endTime.slice(0, 5)}`}
+                    </div>
+                  )}
+                  {m.notes && (
+                    <div className="text-xs text-amber-800 bg-amber-50 mt-1 px-2 py-1 rounded">⚠️ {m.notes}</div>
+                  )}
+                </div>
+              )
+            })}
           </>
         )}
 

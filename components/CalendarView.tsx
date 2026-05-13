@@ -1,10 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 import type { RenderedDay } from '@/lib/calendar-engine'
 import { DayCard } from './DayCard'
+
+function getRomeNow(d: Date): { date: string; minutes: number } {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Rome',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).formatToParts(d)
+  const get = (t: string) => parts.find(p => p.type === t)?.value ?? '00'
+  return {
+    date: `${get('year')}-${get('month')}-${get('day')}`,
+    minutes: parseInt(get('hour'), 10) * 60 + parseInt(get('minute'), 10),
+  }
+}
 
 function groupByWeek(days: RenderedDay[]): RenderedDay[][] {
   const weekdays = days.filter(d => d.weekday <= 4)
@@ -32,7 +45,14 @@ function weekLabel(week: RenderedDay[]): string {
 
 export function CalendarView({ days }: { days: RenderedDay[] }) {
   const [showPast, setShowPast] = useState(false)
-  const today = format(new Date(), 'yyyy-MM-dd')
+  const [now, setNow] = useState<{ date: string; minutes: number } | undefined>(undefined)
+  useEffect(() => {
+    const tick = () => setNow(getRomeNow(new Date()))
+    tick()
+    const id = setInterval(tick, 60_000)
+    return () => clearInterval(id)
+  }, [])
+  const today = now?.date ?? '0000-01-01'
 
   const pastDays = days.filter(d => d.date < today && d.weekday <= 4)
   const visibleDays = (showPast ? days : days.filter(d => d.date >= today)).filter(
@@ -63,7 +83,7 @@ export function CalendarView({ days }: { days: RenderedDay[] }) {
             {showPast ? '▲ Nascondi giorni passati' : `▼ Mostra ${pastDays.length} giorni passati`}
           </button>
         )}
-        {visibleDays.map(d => <DayCard key={d.date} day={d} />)}
+        {visibleDays.map(d => <DayCard key={d.date} day={d} now={now} />)}
       </div>
 
       {/* Desktop: 5-column week rows, full DayCard detail */}
@@ -86,7 +106,7 @@ export function CalendarView({ days }: { days: RenderedDay[] }) {
                 <div key={week[0].date}>
                   <p className="text-[11px] text-stone-400 font-medium mb-1.5">{weekLabel(week)}</p>
                   <div className="grid grid-cols-5 gap-2">
-                    {week.map(day => <DayCard key={day.date} day={day} />)}
+                    {week.map(day => <DayCard key={day.date} day={day} now={now} />)}
                   </div>
                 </div>
               ))}
