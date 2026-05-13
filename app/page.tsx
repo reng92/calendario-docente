@@ -57,10 +57,10 @@ export default async function HomePage() {
             <Link href="/oggi" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
               Oggi
             </Link>
-            <Link href="/circolari" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+            <Link href="/circolari" className="hidden sm:inline-flex bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
               Circolari
             </Link>
-            <Link href="/admin" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+            <Link href="/admin" className="hidden sm:inline-flex bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
               Modifica
             </Link>
           </div>
