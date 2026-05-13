@@ -49,7 +49,8 @@ export async function POST(req: Request) {
 
         if (existing) continue
 
-        const pubblicataIl = item.pubDate ? new Date(item.pubDate) : null
+        const rawDate = item.pubDate ? new Date(item.pubDate) : null
+        const pubblicataIl = rawDate && !isNaN(rawDate.getTime()) ? rawDate : null
         const url = item.link ?? ''
 
         // Check keywords filter
