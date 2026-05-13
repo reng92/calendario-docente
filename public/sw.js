@@ -1,4 +1,4 @@
-const CACHE = 'calendario-v1';
+const CACHE = 'calendario-v2';
 const PRECACHE = ['/', '/manifest.json'];
 
 self.addEventListener('install', (e) => {
