@@ -64,12 +64,12 @@ export default async function HomePage() {
           <div className="max-w-xl mx-auto md:max-w-none md:px-6 lg:px-8 px-4 py-2 flex items-center justify-center gap-4 text-sm font-semibold">
             <span className="flex items-baseline gap-1">
               <span className="text-2xl font-extrabold tabular-nums leading-none">{lessonDays}</span>
-              <span className="text-xs uppercase tracking-wide">lezioni</span>
+              <span className="text-xs uppercase tracking-wide">giorni di lezioni</span>
             </span>
             <span className="opacity-40">·</span>
             <span className="flex items-baseline gap-1">
               <span className="text-2xl font-extrabold tabular-nums leading-none">{scrutiniDays}</span>
-              <span className="text-xs uppercase tracking-wide">scrutini</span>
+              <span className="text-xs uppercase tracking-wide">giorni di scrutini</span>
             </span>
             <span className="text-xs opacity-70 hidden sm:inline">alla fine supplenza (11 giu)</span>
           </div>
