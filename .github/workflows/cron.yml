@@ -4,8 +4,8 @@ on:
   schedule:
     # Lezioni: ogni 5 minuti, 6:00–13:00 UTC (≈ 7-14 ora legale IT), lun–sab
     - cron: "*/5 6-13 * * 1-6"
-    # Circolari: ogni ora, 6:00–19:00 UTC
-    - cron: "0 6-19 * * *"
+    # Circolari: ogni 5 minuti, 6:00–19:00 UTC (≈ 8-21 ora legale IT)
+    - cron: "*/5 6-19 * * *"
 
 jobs:
   ping-lessons:
@@ -19,7 +19,7 @@ jobs:
             https://calendario-docente.vercel.app/api/cron/lessons
 
   ping-circolari:
-    if: github.event.schedule == '0 6-19 * * *'
+    if: github.event.schedule == '*/5 6-19 * * *'
     runs-on: ubuntu-latest
     steps:
       - name: Trigger circolari check
