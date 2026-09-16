@@ -45,7 +45,7 @@ export default async function CircolariPage() {
           </div>
         ) : (
           <Tabs defaultValue={keys[0]}>
-            <TabsList className="mb-3 h-11 w-full rounded-control p-1">
+            <TabsList className="mb-3 w-full rounded-control p-1">
               {keys.map(k => (
                 <TabsTrigger key={k} value={k} className="h-full rounded-[8px] text-small">
                   {labelFor(k)}
