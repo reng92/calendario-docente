@@ -1,57 +1,78 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createMeeting } from '../actions'
+import { createMeeting, updateMeeting } from '../actions'
+import { Field, inputCls, selectCls, textareaCls, PrimaryButton } from '@/components/form'
+import { useFormSheetClose } from '@/components/FormSheet'
+import { EVENT_KIND_OPTIONS } from '@/components/tokens'
 
-export function MeetingForm() {
+export type MeetingInput = {
+  id?: string
+  date?: string
+  startTime?: string | null
+  endTime?: string | null
+  kind?: string
+  title?: string
+  notes?: string | null
+}
+
+export function MeetingForm({ initial }: { initial?: MeetingInput }) {
   const [pending, setPending] = useState(false)
-  const formRef = useRef<HTMLFormElement>(null)
+  const onDone = useFormSheetClose()
   const router = useRouter()
+  const editing = !!initial?.id
 
   async function onSubmit(formData: FormData) {
     setPending(true)
-    await createMeeting({
+    const data = {
       date: formData.get('date') as string,
       startTime: (formData.get('startTime') as string) || undefined,
       endTime: (formData.get('endTime') as string) || undefined,
       kind: formData.get('kind') as string,
       title: formData.get('title') as string,
       notes: (formData.get('notes') as string) || undefined,
-    })
-    setPending(false)
-    formRef.current?.reset()
-    router.refresh()
+    }
+    try {
+      if (editing) await updateMeeting(initial!.id!, data)
+      else await createMeeting(data)
+      router.refresh()
+      onDone()
+    } finally {
+      setPending(false)
+    }
   }
 
   return (
-    <form ref={formRef} action={onSubmit} className="space-y-2">
-      <div className="grid grid-cols-2 gap-2">
-        <input name="date" type="date" required className="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 px-3 py-2 text-sm" />
-        <select name="kind" required className="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 px-3 py-2 text-sm">
-          <option value="">Tipo...</option>
-          <option value="collegio">Collegio docenti</option>
-          <option value="cdc">Consiglio di classe</option>
-          <option value="dipartimento">Dipartimento</option>
-          <option value="colloqui">Colloqui</option>
-          <option value="scrutini">Scrutini</option>
-        </select>
+    <form action={onSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Data" htmlFor="m-date">
+          <input id="m-date" name="date" type="date" required defaultValue={initial?.date ?? ''} className={inputCls} />
+        </Field>
+        <Field label="Tipo" htmlFor="m-kind">
+          <select id="m-kind" name="kind" required defaultValue={initial?.kind ?? ''} className={selectCls}>
+            <option value="" disabled>Scegli…</option>
+            {EVENT_KIND_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        </Field>
       </div>
-      <input name="title" required placeholder="Titolo" className="w-full rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 px-3 py-2 text-sm" />
-      <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-1">
-          <label className="text-xs text-stone-500 dark:text-stone-400 font-medium">Inizio</label>
-          <input name="startTime" type="time" className="w-full rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 px-3 py-2 text-sm" />
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs text-stone-500 dark:text-stone-400 font-medium">Fine</label>
-          <input name="endTime" type="time" className="w-full rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 px-3 py-2 text-sm" />
-        </div>
+      <Field label="Titolo" htmlFor="m-title">
+        <input id="m-title" name="title" required defaultValue={initial?.title ?? ''} placeholder="Es. Consiglio di classe 3MAN" className={inputCls} />
+      </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Inizio" htmlFor="m-start">
+          <input id="m-start" name="startTime" type="time" defaultValue={initial?.startTime?.slice(0, 5) ?? ''} className={inputCls} />
+        </Field>
+        <Field label="Fine" htmlFor="m-end">
+          <input id="m-end" name="endTime" type="time" defaultValue={initial?.endTime?.slice(0, 5) ?? ''} className={inputCls} />
+        </Field>
       </div>
-      <textarea name="notes" placeholder="Note (opzionale)" className="w-full rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 px-3 py-2 text-sm" rows={2} />
-      <button type="submit" disabled={pending} className="w-full rounded-lg bg-stone-900 text-white py-2 font-semibold disabled:opacity-50">
-        {pending ? 'Salvataggio...' : 'Aggiungi'}
-      </button>
+      <Field label="Note" htmlFor="m-notes" hint="Facoltative: aula, ordine del giorno, avvertenze.">
+        <textarea id="m-notes" name="notes" rows={2} defaultValue={initial?.notes ?? ''} className={textareaCls} />
+      </Field>
+      <PrimaryButton type="submit" disabled={pending}>
+        {pending ? 'Salvataggio…' : editing ? 'Salva modifiche' : 'Aggiungi impegno'}
+      </PrimaryButton>
     </form>
   )
 }
