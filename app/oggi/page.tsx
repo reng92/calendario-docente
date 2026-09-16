@@ -5,13 +5,9 @@ import Link from 'next/link'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { format, parseISO, addDays } from 'date-fns'
 import { it } from 'date-fns/locale'
+import { hourLabel, LESSONS_END, LESSONS_END_LABEL } from '@/lib/schedule'
 
 export const dynamic = 'force-dynamic'
-
-const HOUR_TIMES: Record<number, string> = {
-  1: '8:00', 2: '9:00', 3: '10:00', 4: '11:00',
-  5: '12:00', 6: '13:00', 7: '14:00',
-}
 
 const EVENT_COLORS: Record<string, string> = {
   collegio: '#1A237E', dipartimento: '#004D40', cdc: '#E65100',
@@ -43,8 +39,8 @@ export default async function OggiPage() {
   const rangeEndIso = format(rangeEnd, 'yyyy-MM-dd')
 
   const input = {
-    classes: classesData.map(c => ({ id: c.id, code: c.code, color: c.color, room: c.room, floor: c.floor })),
-    weeklySlots: weeklyData.map(w => ({ weekday: w.weekday, hour: w.hour, classId: w.classId! })),
+    classes: classesData.map(c => ({ id: c.id, code: c.code, color: c.color, subject: c.subject, room: c.room, floor: c.floor })),
+    weeklySlots: weeklyData.map(w => ({ weekday: w.weekday, hour: w.hour, classId: w.classId!, subject: w.subject, room: w.room })),
     coteachers: coteachersData.map(c => ({
       classId: c.classId!, weekday: c.weekday!, hour: c.hour!, teacherName: c.teacherName, role: c.role,
     })),
@@ -55,14 +51,13 @@ export default async function OggiPage() {
     meetings: meetingsData.map(m => ({
       id: m.id, date: m.date, startTime: m.startTime, endTime: m.endTime, kind: m.kind, title: m.title, notes: m.notes,
     })),
-    lessonEndDate: '2026-06-08',
+    lessonEndDate: LESSONS_END,
   }
 
   const days = renderDays(input, todayIso, rangeEndIso)
   const today = days.find(d => d.date === todayIso)
 
-  const SUPPLENZA_END = '2026-06-11'
-  const allDays = renderDays(input, todayIso, SUPPLENZA_END)
+  const allDays = renderDays(input, todayIso, LESSONS_END)
   const lessonDays = allDays.filter(d => d.date >= todayIso && d.slots.some(s => s.kind === 'lesson')).length
   const scrutiniDays = allDays.filter(d => d.date >= todayIso && d.meetings.some(m => m.kind === 'scrutini')).length
 
@@ -104,7 +99,7 @@ export default async function OggiPage() {
             <span className="text-2xl font-extrabold tabular-nums leading-none">{scrutiniDays}</span>
             <span className="text-xs uppercase tracking-wide">gg scrutini</span>
           </span>
-          <span className="text-xs opacity-70">alla fine supplenza</span>
+          <span className="text-xs opacity-70">entro il {LESSONS_END_LABEL}</span>
         </div>
       </header>
 
@@ -137,17 +132,30 @@ export default async function OggiPage() {
                     {today.slots.map(s => (
                       <div key={s.hour} className="flex items-center gap-2">
                         <span className="text-xs text-stone-400 dark:text-stone-500 min-w-[4rem]">
-                          {HOUR_TIMES[s.hour]}
+                          {hourLabel(s.hour)}
                         </span>
                         {s.kind === 'padel' ? (
                           <span className="bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded">🎾 PADEL</span>
                         ) : (
-                          <span
-                            className="text-white text-sm font-bold px-2 py-0.5 rounded"
-                            style={{ background: s.class?.color }}
-                          >
-                            {s.class?.code}
-                          </span>
+                          <>
+                            <span
+                              className="text-white text-sm font-bold px-2 py-0.5 rounded"
+                              style={{ background: s.class?.color }}
+                            >
+                              {s.class?.code}
+                            </span>
+                            {s.subject && (
+                              <span className="text-xs font-semibold text-stone-600 dark:text-stone-300">{s.subject}</span>
+                            )}
+                            {s.room && (
+                              <span className="text-xs text-stone-400 dark:text-stone-500 font-mono">{s.room}</span>
+                            )}
+                            {s.coteachers.length > 0 && (
+                              <span className="text-[11px] text-stone-400 dark:text-stone-500">
+                                con {s.coteachers.map(c => c.name).join(', ')}
+                              </span>
+                            )}
+                          </>
                         )}
                       </div>
                     ))}

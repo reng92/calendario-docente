@@ -6,7 +6,7 @@
 
 ## 1. Contesto del progetto
 
-App Next.js esistente per gestire l'orario settimanale di un docente di scuola secondaria (IIS Einstein-Bachelet, Roma). Già deployata su Vercel: https://calendario-docente.vercel.app/
+App Next.js esistente per gestire l'orario settimanale di un docente di scuola secondaria (ISISS "Antonio Magarotto", Roma). Già deployata su Vercel: https://calendario-docente.vercel.app/
 
 **Stack attuale**:
 - Next.js (App Router) + TypeScript
@@ -18,7 +18,7 @@ App Next.js esistente per gestire l'orario settimanale di un docente di scuola s
 **Obiettivo di questa iterazione**: trasformare l'app in **PWA installabile** con tre flussi di notifiche push:
 
 1. **Promemoria lezioni**: 10 minuti prima di ogni lezione, push con classe, materia, aula, eventuale co-docente.
-2. **Circolari scuola**: notifica quando viene pubblicata una nuova circolare sul sito IIS Einstein-Bachelet.
+2. **Circolari scuola**: notifica quando viene pubblicata una nuova circolare sul sito ISISS Magarotto (feed RSS: https://www.isiss-magarotto.edu.it/circolare/feed/).
 3. **Avvisi USP/USR**: notifica quando viene pubblicato un nuovo avviso sul sito dell'Ufficio Scolastico Provinciale di Roma / USR Lazio.
 
 ---
@@ -304,7 +304,7 @@ export const supabaseAdmin = createClient(
 
 ### Fase 4 — Monitoraggio circolari scuola
 1. **Ispezione manuale prima del codice**: l'utente deve fornire:
-   - URL della pagina circolari di IIS Einstein-Bachelet
+   - URL della pagina circolari di ISISS Magarotto (https://www.isiss-magarotto.edu.it/circolare/)
    - Eventuale URL del feed RSS (provare `/feed`, `/?feed=rss2`, `/category/circolari/feed/`, oppure cercare `<link rel="alternate" type="application/rss+xml">` nel sorgente)
    - Se solo HTML: il selettore degli articoli (es. `.circolare-item`, `article.post`, ecc.)
 2. Applicare migration `sources` + `circolari_seen` via MCP.
@@ -318,7 +318,7 @@ export const supabaseAdmin = createClient(
 7. Payload:
    ```json
    {
-     "title": "Nuova circolare — Einstein-Bachelet",
+     "title": "Nuova circolare — ISISS Magarotto",
      "body": "Convocazione consiglio di classe 5A",
      "url": "https://link-diretto-al-pdf...",
      "tag": "circolare-<id>"

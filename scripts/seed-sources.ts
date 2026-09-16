@@ -9,11 +9,11 @@ async function seedSources() {
   await db.insert(sources).values([
     {
       key: 'scuola',
-      label: 'IIS Einstein-Bachelet',
-      url: 'https://www.bacheleteinstein.edu.it/feed?view=comunicati',
+      label: 'ISISS Magarotto',
+      url: 'https://www.isiss-magarotto.edu.it/circolare/feed/',
       kind: 'rss',
       keywords: [],
-      active: true,
+      active: false, // da attivare dopo verifica del feed
     },
     {
       key: 'usp_roma',

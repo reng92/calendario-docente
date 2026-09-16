@@ -6,13 +6,9 @@ import { sendPushToAll } from '@/lib/push'
 import { toZonedTime } from 'date-fns-tz'
 import { format } from 'date-fns'
 import { eq, and } from 'drizzle-orm'
+import { HOUR_EFFECTIVE_START } from '@/lib/schedule'
 
 const TZ = 'Europe/Rome'
-
-const HOUR_TIMES: Record<number, string> = {
-  1: '08:00', 2: '09:00', 3: '10:00', 4: '11:00',
-  5: '12:00', 6: '13:00', 7: '14:00',
-}
 
 export async function POST(req: Request) {
   const authError = requireCronAuth(req)
@@ -36,7 +32,7 @@ export async function POST(req: Request) {
   }
 
   const slots = await db
-    .select({ hour: weeklySlots.hour, classId: weeklySlots.classId })
+    .select({ hour: weeklySlots.hour, classId: weeklySlots.classId, subject: weeklySlots.subject, room: weeklySlots.room })
     .from(weeklySlots)
     .where(eq(weeklySlots.weekday, weekday))
 
@@ -47,7 +43,7 @@ export async function POST(req: Request) {
 
   for (const slot of slots) {
     if (!slot.classId) continue
-    const startTimeStr = HOUR_TIMES[slot.hour]
+    const startTimeStr = HOUR_EFFECTIVE_START[slot.hour]
     if (!startTimeStr) continue
 
     const [h, m] = startTimeStr.split(':').map(Number)
@@ -90,11 +86,13 @@ export async function POST(req: Request) {
     const cotStr = cotList.length > 0
       ? ` · con ${cotList.map(c => c.teacherName.split(' ').pop()).join(', ')}`
       : ''
-    const roomStr = klass.room ? ` · ${klass.room}` : ''
+    const room = slot.room ?? klass.room
+    const subject = slot.subject ?? klass.subject
+    const roomStr = room ? ` · ${room}` : ''
 
     await sendPushToAll({
       title: `${slot.hour}ª ora — ${klass.code}`,
-      body: `${klass.subject ?? 'Lezione'} tra 10 min${roomStr}${cotStr}`,
+      body: `${subject ?? 'Lezione'} tra 10 min${roomStr}${cotStr}`,
       url: '/',
       tag: `lesson-${slot.classId}-${todayStr}-${slot.hour}`,
     })

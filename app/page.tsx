@@ -5,6 +5,7 @@ import { CalendarView } from '@/components/CalendarView'
 import { PushSubscribeButton } from '@/components/PushSubscribeButton'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import Link from 'next/link'
+import { SCHOOL_SHORT, SCHOOL_CITY, LESSONS_END, LESSONS_END_LABEL, CALENDAR_FROM, CALENDAR_TO } from '@/lib/schedule'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,8 +22,8 @@ export default async function HomePage() {
 
   const days = renderDays(
     {
-      classes: classesData.map(c => ({ id: c.id, code: c.code, color: c.color, room: c.room, floor: c.floor })),
-      weeklySlots: weeklyData.map(w => ({ weekday: w.weekday, hour: w.hour, classId: w.classId! })),
+      classes: classesData.map(c => ({ id: c.id, code: c.code, color: c.color, subject: c.subject, room: c.room, floor: c.floor })),
+      weeklySlots: weeklyData.map(w => ({ weekday: w.weekday, hour: w.hour, classId: w.classId!, subject: w.subject, room: w.room })),
       coteachers: coteachersData.map(c => ({
         classId: c.classId!, weekday: c.weekday!, hour: c.hour!, teacherName: c.teacherName, role: c.role,
       })),
@@ -33,15 +34,14 @@ export default async function HomePage() {
       meetings: meetingsData.map(m => ({
         id: m.id, date: m.date, startTime: m.startTime, endTime: m.endTime, kind: m.kind, title: m.title, notes: m.notes,
       })),
-      lessonEndDate: '2026-06-08',
+      lessonEndDate: LESSONS_END,
     },
-    '2026-04-20',
-    '2026-06-30'
+    CALENDAR_FROM,
+    CALENDAR_TO
   )
 
-  const SUPPLENZA_END = '2026-06-11'
   const todayIso = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome' }).format(new Date())
-  const remaining = days.filter(d => d.date >= todayIso && d.date <= SUPPLENZA_END)
+  const remaining = days.filter(d => d.date >= todayIso && d.date <= LESSONS_END)
   const lessonDays = remaining.filter(d => d.slots.some(s => s.kind === 'lesson')).length
   const scrutiniDays = remaining.filter(d => d.meetings.some(m => m.kind === 'scrutini')).length
 
@@ -51,7 +51,7 @@ export default async function HomePage() {
         <div className="max-w-xl mx-auto md:max-w-none md:px-6 lg:px-8 py-3 px-4 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-lg font-bold">Calendario impegni</h1>
-            <p className="text-xs opacity-70">IIS Einstein-Bachelet · Via Pasquale II, Roma</p>
+            <p className="text-xs opacity-70">{SCHOOL_SHORT} · {SCHOOL_CITY}</p>
           </div>
           <div className="flex gap-1.5 shrink-0 items-center">
             <ThemeToggle />
@@ -59,8 +59,8 @@ export default async function HomePage() {
             <Link href="/oggi" className="bg-white/10 hover:bg-white/20 text-white text-[11px] font-semibold px-2 py-1.5 rounded-full">
               Oggi
             </Link>
-            <Link href="/docenti" className="bg-white/10 hover:bg-white/20 text-white text-[11px] font-semibold px-2 py-1.5 rounded-full">
-              Docenti
+            <Link href="/circolari" className="bg-white/10 hover:bg-white/20 text-white text-[11px] font-semibold px-2 py-1.5 rounded-full">
+              Circolari
             </Link>
             <Link href="/admin" className="bg-white/10 hover:bg-white/20 text-white text-[11px] font-semibold px-2 py-1.5 rounded-full">
               ✏️
@@ -78,10 +78,10 @@ export default async function HomePage() {
               <span className="text-2xl font-extrabold tabular-nums leading-none">{scrutiniDays}</span>
               <span className="text-xs uppercase tracking-wide">giorni di scrutini</span>
             </span>
-            <span className="text-xs opacity-70 hidden sm:inline">alla fine supplenza (11 giu)</span>
+            <span className="text-xs opacity-70 hidden sm:inline">entro fine lezioni ({LESSONS_END_LABEL})</span>
           </div>
           <div className="sm:hidden text-center text-[10px] opacity-70 pb-1.5 -mt-1">
-            alla fine supplenza · 11 giugno
+            entro fine lezioni · {LESSONS_END_LABEL}
           </div>
         </div>
       </header>

@@ -30,7 +30,7 @@ export function OverrideForm({ classes }: { classes: ClassOption[] }) {
     <form ref={formRef} action={onSubmit} className="space-y-2">
       <div className="grid grid-cols-2 gap-2">
         <input name="date" type="date" required className="rounded-lg border border-stone-300 px-3 py-2 text-sm" />
-        <input name="hour" type="number" min={1} max={7} placeholder="Ora (1-7)" className="rounded-lg border border-stone-300 px-3 py-2 text-sm" />
+        <input name="hour" type="number" min={1} max={5} placeholder="Ora (1-5)" className="rounded-lg border border-stone-300 px-3 py-2 text-sm" />
       </div>
       <select name="kind" required className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm">
         <option value="">Tipo...</option>

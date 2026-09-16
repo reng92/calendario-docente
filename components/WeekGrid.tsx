@@ -1,11 +1,7 @@
 import type { RenderedDay } from '@/lib/calendar-engine'
 import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
-
-const HOUR_TIMES: Record<number, string> = {
-  1: '8:00', 2: '9:00', 3: '10:00', 4: '11:00',
-  5: '12:00', 6: '13:00', 7: '14:00',
-}
+import { BREAKS, hourLabel } from '@/lib/schedule'
 
 const EVENT_COLORS: Record<string, string> = {
   collegio: '#1A237E',
@@ -16,7 +12,7 @@ const EVENT_COLORS: Record<string, string> = {
 }
 
 const WEEKDAY_NAMES = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven']
-const BREAK_AFTER = new Set([3, 5])
+const BREAK_AFTER = new Set(Object.keys(BREAKS).map(Number))
 
 function shortTeacher(name: string): string {
   const parts = name.trim().split(/\s+/)
@@ -73,7 +69,7 @@ export function WeekGrid({ week }: { week: RenderedDay[] }) {
           className={`bg-stone-50 border-r border-stone-100 px-1 py-2.5 flex flex-col items-center justify-center text-center ${BREAK_AFTER.has(hour) ? 'border-b-2 border-b-stone-300' : 'border-b border-b-stone-100'}`}
         >
           <span className="text-[11px] font-bold text-stone-500">{hour}ª</span>
-          <span className="text-[9px] text-stone-400 leading-tight">{HOUR_TIMES[hour]}</span>
+          <span className="text-[9px] text-stone-400 leading-tight">{hourLabel(hour)}</span>
         </div>,
 
         ...[0, 1, 2, 3, 4].map(wd => {
@@ -123,6 +119,12 @@ export function WeekGrid({ week }: { week: RenderedDay[] }) {
                 >
                   {slot.class.code}
                 </div>
+              )}
+              {slot.subject && (
+                <div className="text-[9px] font-semibold text-stone-600 truncate leading-tight">{slot.subject}</div>
+              )}
+              {slot.room && (
+                <div className="text-[9px] text-stone-400 truncate leading-tight font-mono">{slot.room}</div>
               )}
               {slot.coteachers.slice(0, 2).map((c, i) => (
                 <div key={i} className="text-[9px] text-stone-500 truncate leading-tight">

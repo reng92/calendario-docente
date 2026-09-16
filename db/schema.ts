@@ -16,6 +16,7 @@ export const weeklySlots = pgTable('weekly_slots', {
   weekday: smallint('weekday').notNull(),
   hour: smallint('hour').notNull(),
   classId: uuid('class_id').references(() => classes.id, { onDelete: 'cascade' }),
+  subject: text('subject'),
   room: text('room'),
   validFrom: date('valid_from').notNull(),
   validTo: date('valid_to'),

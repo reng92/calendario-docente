@@ -1,6 +1,7 @@
 import type { RenderedDay, RenderedSlot } from '@/lib/calendar-engine'
 import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
+import { BREAKS, hourRange, hourEndMin, timeToMin } from '@/lib/schedule'
 
 const EVENT_COLORS: Record<string, string> = {
   collegio: '#1A237E',
@@ -18,31 +19,6 @@ const EVENT_TEXT_CLS: Record<string, string> = {
   scrutini:    'text-purple-900 dark:text-purple-300',
 }
 
-const BREAKS: Record<number, string> = {
-  3: '10:45–11:00',
-  5: '13:00–13:15',
-}
-
-const HOUR_TIMES: Record<number, string> = {
-  1: '8:00–9:00',
-  2: '9:00–10:00',
-  3: '10:00–11:00',
-  4: '11:00–12:00',
-  5: '12:00–13:00',
-  6: '13:00–14:00',
-  7: '14:00–15:00',
-}
-
-const SLOT_END_MIN: Record<number, number> = {
-  1: 9 * 60, 2: 10 * 60, 3: 11 * 60, 4: 12 * 60,
-  5: 13 * 60, 6: 14 * 60, 7: 15 * 60,
-}
-
-function timeToMin(t: string): number {
-  const [h, m] = t.split(':').map(Number)
-  return h * 60 + m
-}
-
 function shortName(name: string): string {
   const parts = name.split(' ')
   if (parts.length === 1) return name
@@ -58,7 +34,7 @@ function SlotRow({ s, isPast }: { s: RenderedSlot; isPast: boolean }) {
         <div className="flex items-center gap-2">
           <div className="min-w-[5rem] text-xs text-stone-500 dark:text-stone-400 leading-tight">
             <div>{s.hour}ª ora</div>
-            <div className="text-[10px] text-stone-400 dark:text-stone-500">{HOUR_TIMES[s.hour]}</div>
+            <div className="text-[10px] text-stone-400 dark:text-stone-500">{hourRange(s.hour)}</div>
           </div>
           <span className="bg-orange-600 text-white px-2 py-0.5 rounded text-sm font-bold">🎾 PADEL</span>
           <span className="text-sm text-orange-900 dark:text-orange-300 line-through opacity-70">{s.class?.code}</span>
@@ -80,7 +56,7 @@ function SlotRow({ s, isPast }: { s: RenderedSlot; isPast: boolean }) {
         <div className="flex items-center gap-2">
           <div className="min-w-[5rem] text-xs text-stone-500 dark:text-stone-400 leading-tight">
             <div>{s.hour}ª ora</div>
-            <div className="text-[10px] text-stone-400 dark:text-stone-500">{HOUR_TIMES[s.hour]}</div>
+            <div className="text-[10px] text-stone-400 dark:text-stone-500">{hourRange(s.hour)}</div>
           </div>
           <span className="text-white px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide" style={{ background: cfg.badgeBg }}>
             {cfg.label}
@@ -100,7 +76,7 @@ function SlotRow({ s, isPast }: { s: RenderedSlot; isPast: boolean }) {
         <div className="flex items-center gap-2">
           <div className="min-w-[5rem] text-xs text-stone-500 dark:text-stone-400 leading-tight">
             <div>{s.hour}ª ora</div>
-            <div className="text-[10px] text-stone-400 dark:text-stone-500">{HOUR_TIMES[s.hour]}</div>
+            <div className="text-[10px] text-stone-400 dark:text-stone-500">{hourRange(s.hour)}</div>
           </div>
           <span className="bg-blue-700 text-white px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide">Supplenza</span>
           {s.class && (
@@ -122,7 +98,7 @@ function SlotRow({ s, isPast }: { s: RenderedSlot; isPast: boolean }) {
       <div className="flex items-center gap-2">
         <div className="min-w-[5rem] text-xs text-stone-500 dark:text-stone-400 leading-tight">
           <div>{s.hour}ª ora</div>
-          <div className="text-[10px] text-stone-400 dark:text-stone-500">{HOUR_TIMES[s.hour]}</div>
+          <div className="text-[10px] text-stone-400 dark:text-stone-500">{hourRange(s.hour)}</div>
         </div>
         <span
           className="text-white px-2 py-0.5 rounded text-sm font-bold"
@@ -130,9 +106,14 @@ function SlotRow({ s, isPast }: { s: RenderedSlot; isPast: boolean }) {
         >
           {s.class?.code}
         </span>
-        {s.class?.room && (
-          <span className="text-xs text-stone-400 dark:text-stone-500 font-mono">
-            {s.class.floor?.[0]}·{s.class.room}
+        {s.subject && (
+          <span className="text-xs font-semibold text-stone-600 dark:text-stone-300 truncate">
+            {s.subject}
+          </span>
+        )}
+        {s.room && (
+          <span className="text-xs text-stone-400 dark:text-stone-500 font-mono whitespace-nowrap">
+            {s.class?.floor ? `${s.class.floor[0]}·` : ''}{s.room}
           </span>
         )}
       </div>
@@ -163,7 +144,7 @@ export function DayCard({ day, now }: { day: RenderedDay; now?: { date: string; 
     if (!now) return false
     if (dayIsPast) return true
     if (!isToday) return false
-    return now.minutes >= (SLOT_END_MIN[hour] ?? 0)
+    return now.minutes >= hourEndMin(hour)
   }
   const isMeetingPast = (m: { startTime: string | null; endTime: string | null }): boolean => {
     if (!now) return false

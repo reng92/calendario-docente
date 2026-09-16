@@ -1,7 +1,7 @@
 {
   "name": "Calendario docente",
   "short_name": "Calendario",
-  "description": "Calendario impegni IIS Einstein-Bachelet",
+  "description": "Calendario impegni ISISS Magarotto",
   "start_url": "/oggi",
   "display": "standalone",
   "orientation": "portrait",

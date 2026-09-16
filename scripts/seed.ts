@@ -1,9 +1,18 @@
 import 'dotenv/config'
 import { db } from '../db'
-import { classes, weeklySlots, coteachers, holidays, dayOverrides, meetings } from '../db/schema'
+import { classes, weeklySlots, coteachers, holidays } from '../db/schema'
 import { sql } from 'drizzle-orm'
 
-const VALID_FROM = '2026-01-07'
+/**
+ * Seed a.s. 2026/27 — ISISS "Antonio Magarotto" (Roma)
+ * Orario provvisorio in vigore dal 14 settembre 2026.
+ *
+ * Legenda orario:
+ *   D = "Propria classe" (ora in propria classe, senza compresenza)
+ *   1MAN / 3MAN = classi con materia, aula ed eventuale docente di compresenza
+ */
+
+const VALID_FROM = '2026-09-14'
 
 async function seed() {
   console.log('🧹 Pulizia tabelle...')
@@ -11,56 +20,46 @@ async function seed() {
 
   console.log('📚 Classi...')
   const classData = [
-    { code: '5CT',  color: '#B5651D', subject: 'TPSEE',          room: '107',  floor: 'Primo' },
-    { code: '5ET',  color: '#C0392B', subject: 'TPSEE',          room: '306',  floor: 'Terzo' },
-    { code: '4AT',  color: '#27AE60', subject: 'TPSEE',          room: '104b', floor: 'Primo' },
-    { code: '3CT',  color: '#7D3C98', subject: 'Elettrotecnica', room: '106',  floor: 'Primo' },
-    { code: '3GTB', color: '#16A085', subject: 'Elettrotecnica', room: '205',  floor: 'Secondo' },
-    { code: '4CT',  color: '#2874A6', subject: 'TPSEE',          room: '110',  floor: 'Primo' },
-    { code: '4DT',  color: '#AD1457', subject: 'TPSEE',          room: '203',  floor: 'Secondo' },
+    { code: '1MAN', color: '#0097A7', subject: 'TTRG', room: 'T.09',  floor: null },
+    { code: '3MAN', color: '#C62828', subject: 'TTRI', room: 'II.26', floor: null },
+    { code: 'D',    color: '#B08900', subject: 'Propria classe', room: null, floor: null },
   ]
   const insertedClasses = await db.insert(classes).values(classData).returning()
   const byCode = Object.fromEntries(insertedClasses.map(c => [c.code, c.id]))
 
   console.log('📅 Orario settimanale...')
-  const schedule: Array<[number, number, string]> = [
-    [0, 5, '4CT'], [0, 6, '4CT'],
-    [1, 2, '5ET'], [1, 3, '5ET'], [1, 4, '3CT'], [1, 5, '3CT'],
-    [2, 1, '5CT'], [2, 2, '5CT'], [2, 4, '3GTB'], [2, 5, '3GTB'],
-    [3, 5, '4DT'], [3, 6, '4DT'], [3, 7, '4AT'],
-    [4, 2, '4AT'], [4, 3, '4AT'], [4, 4, '3GTB'], [4, 5, '5ET'], [4, 6, '5CT'],
+  // [weekday (0=lun), ora, classe, materia?, aula?]
+  const schedule: Array<[number, number, string, string?, string?]> = [
+    // Lunedì
+    [0, 1, 'D'], [0, 2, 'D'], [0, 3, 'D'], [0, 4, 'D'],
+    // Martedì
+    [1, 1, 'D'], [1, 2, 'D'], [1, 3, 'D'], [1, 4, 'D'],
+    // Mercoledì
+    [2, 1, '1MAN', 'TTRG', 'T.09'],
+    [2, 2, '3MAN', 'TTRI', 'Aula Magna'],
+    [2, 3, 'D'], [2, 4, 'D'],
+    // Giovedì
+    [3, 1, 'D'],
+    [3, 2, '3MAN', 'TTRI', 'II.26'],
+    // Venerdì
+    [4, 1, 'D'], [4, 2, 'D'],
+    [4, 3, '1MAN', 'TTRG', 'T.09'],
+    [4, 4, '3MAN', 'TTIM', 'II.26'],
   ]
   await db.insert(weeklySlots).values(
-    schedule.map(([wd, h, code]) => ({
-      weekday: wd, hour: h, classId: byCode[code], validFrom: VALID_FROM,
+    schedule.map(([wd, h, code, subject, room]) => ({
+      weekday: wd, hour: h, classId: byCode[code],
+      subject: subject ?? null, room: room ?? null,
+      validFrom: VALID_FROM,
     }))
   )
 
   console.log('👥 Compresenze...')
   const coteacherData = [
-    { code: '4CT', wd: 0, h: 5, name: 'Caputo Stefano',      role: 'altro' },
-    { code: '4CT', wd: 0, h: 5, name: 'Imperatore Stefania', role: 'sostegno' },
-    { code: '4CT', wd: 0, h: 6, name: 'Caputo Stefano',      role: 'altro' },
-    { code: '5ET', wd: 1, h: 2, name: 'Tara Giada',          role: 'altro' },
-    { code: '5ET', wd: 1, h: 3, name: 'Tara Giada',          role: 'altro' },
-    { code: '5ET', wd: 1, h: 3, name: 'Divenuto Rossella',   role: 'sostegno' },
-    { code: '3CT', wd: 1, h: 4, name: 'Caputo Stefano',      role: 'altro' },
-    { code: '3CT', wd: 1, h: 4, name: 'Bevacqua Caterina',   role: 'sostegno' },
-    { code: '3CT', wd: 1, h: 5, name: 'Caputo Stefano',      role: 'altro' },
-    { code: '3CT', wd: 1, h: 5, name: 'Muto Elisabetta',     role: 'sostegno' },
-    { code: '5CT', wd: 2, h: 1, name: 'Caputo Stefano',      role: 'altro' },
-    { code: '5CT', wd: 2, h: 2, name: 'Caputo Stefano',      role: 'altro' },
-    { code: '3GTB',wd: 2, h: 4, name: 'Calzetti Angelo',     role: 'altro' },
-    { code: '3GTB',wd: 2, h: 5, name: 'Calzetti Angelo',     role: 'altro' },
-    { code: '4DT', wd: 3, h: 5, name: 'Puolo Adriana',       role: 'altro' },
-    { code: '4DT', wd: 3, h: 6, name: 'Puolo Adriana',       role: 'altro' },
-    { code: '4AT', wd: 3, h: 7, name: 'De Blasio Giuliano',  role: 'altro' },
-    { code: '4AT', wd: 4, h: 2, name: 'De Blasio Giuliano',  role: 'altro' },
-    { code: '4AT', wd: 4, h: 3, name: 'De Blasio Giuliano',  role: 'altro' },
-    { code: '3GTB',wd: 4, h: 4, name: 'Calzetti Angelo',     role: 'altro' },
-    { code: '5ET', wd: 4, h: 5, name: 'Tara Giada',          role: 'altro' },
-    { code: '5ET', wd: 4, h: 5, name: 'Divenuto Rossella',   role: 'sostegno' },
-    { code: '5CT', wd: 4, h: 6, name: 'Caputo Stefano',      role: 'altro' },
+    { code: '1MAN', wd: 2, h: 1, name: 'Nencetti', role: 'altro' },
+    { code: '3MAN', wd: 2, h: 2, name: 'Lavoro',   role: 'altro' },
+    { code: '1MAN', wd: 4, h: 3, name: 'Nencetti', role: 'altro' },
+    { code: '3MAN', wd: 4, h: 4, name: 'Valente',  role: 'altro' },
   ]
   await db.insert(coteachers).values(
     coteacherData.map(c => ({
@@ -68,89 +67,31 @@ async function seed() {
     }))
   )
 
-  console.log('🚫 Festività e sospensioni...')
+  console.log('🚫 Festività e sospensioni (a.s. 2026/27 — verificare con il calendario d\'istituto)...')
   await db.insert(holidays).values([
-    { date: '2025-11-01', label: 'Festa di Ognissanti' },
-    { date: '2025-12-08', label: 'Immacolata Concezione' },
-    { date: '2025-12-22', label: 'Recupero anticipazione a.s.' },
-    { date: '2025-12-23', label: 'Vacanze di Natale' },
-    { date: '2025-12-24', label: 'Vacanze di Natale' },
-    { date: '2025-12-25', label: 'Natale' },
-    { date: '2025-12-26', label: 'Santo Stefano' },
-    { date: '2025-12-27', label: 'Vacanze di Natale' },
-    { date: '2025-12-29', label: 'Vacanze di Natale' },
-    { date: '2025-12-30', label: 'Vacanze di Natale' },
-    { date: '2025-12-31', label: 'Vacanze di Natale' },
-    { date: '2026-01-02', label: 'Vacanze di Natale' },
-    { date: '2026-01-03', label: 'Vacanze di Natale' },
-    { date: '2026-01-05', label: 'Vacanze di Natale' },
-    { date: '2026-01-06', label: 'Epifania' },
-    { date: '2026-04-02', label: 'Vacanze di Pasqua' },
-    { date: '2026-04-03', label: 'Vacanze di Pasqua' },
-    { date: '2026-04-06', label: 'Vacanze di Pasqua' },
-    { date: '2026-04-07', label: 'Vacanze di Pasqua' },
-    { date: '2026-04-25', label: 'Festa della Liberazione' },
-    { date: '2026-05-01', label: 'Festa del Lavoro' },
-    { date: '2026-06-01', label: 'Recupero anticipazione a.s.' },
-    { date: '2026-06-02', label: 'Festa della Repubblica' },
-    { date: '2026-06-29', label: 'Festa del Santo Patrono' },
-  ])
-
-  console.log('🎾 Progetto Racchette in Classe (PADEL)...')
-  // Calendario aggiornato: giovedì eliminati (4DT non partecipa), lunedì 4CT e venerdì 4AT invariati
-  const padelOverrides: Array<{ date: string, hour: number, classId: string }> = [
-    ...['2026-04-27', '2026-05-04', '2026-05-11', '2026-05-18'].flatMap(d => [
-      { date: d, hour: 5, classId: byCode['4CT'] },
-      { date: d, hour: 6, classId: byCode['4CT'] },
-    ]),
-    ...['2026-05-08', '2026-05-15', '2026-05-22', '2026-05-29'].flatMap(d => [
-      { date: d, hour: 2, classId: byCode['4AT'] },
-      { date: d, hour: 3, classId: byCode['4AT'] },
-    ]),
-  ]
-  await db.insert(dayOverrides).values(
-    padelOverrides.map(p => ({
-      date: p.date, hour: p.hour, kind: 'padel', classId: p.classId,
-      note: 'Progetto "Racchette in Classe"',
-    }))
-  )
-
-  console.log('🏛️ Assemblea sindacale 13 maggio...')
-  await db.insert(dayOverrides).values([
-    { date: '2026-05-13', hour: 1, kind: 'assembly', classId: byCode['5CT'], note: 'Assemblea sindacale – prime 2 ore' },
-    { date: '2026-05-13', hour: 2, kind: 'assembly', classId: byCode['5CT'], note: 'Assemblea sindacale – prime 2 ore' },
-  ])
-
-  console.log('🏫 Impegni pomeridiani...')
-  await db.insert(meetings).values([
-    { date: '2026-05-05', kind: 'dipartimento', title: 'Riunione dipartimentale',
-      startTime: '15:00:00', endTime: '17:00:00',
-      notes: 'Il piano indica "Lunedì 5 maggio", ma cade di martedì — verificare con la scuola' },
-    { date: '2026-05-06', kind: 'colloqui', title: 'Colloqui generali scuola-famiglia',
-      startTime: '15:00:00', endTime: '17:00:00' },
-    { date: '2026-05-07', kind: 'colloqui', title: 'Colloqui generali scuola-famiglia',
-      startTime: '15:00:00', endTime: '17:00:00' },
-    { date: '2026-05-11', kind: 'cdc', title: 'Consigli di classe',
-      startTime: '15:00:00', notes: 'Adozione libri di testo + andamento' },
-    { date: '2026-05-12', kind: 'cdc', title: 'Consigli di classe', startTime: '15:00:00' },
-    { date: '2026-05-13', kind: 'cdc', title: 'Consigli di classe', startTime: '15:00:00' },
-    { date: '2026-05-14', kind: 'cdc', title: 'Consigli di classe', startTime: '15:00:00' },
-    { date: '2026-05-15', kind: 'cdc', title: 'Consigli di classe', startTime: '15:00:00' },
-    { date: '2026-05-18', kind: 'collegio', title: 'Collegio docenti',
-      startTime: '15:00:00', endTime: '17:00:00' },
-    // Lun 8 giugno
-    { date: '2026-06-08', kind: 'scrutini', title: 'Scrutinio 5CT', startTime: '17:35:00', endTime: '18:00:00' },
-    { date: '2026-06-08', kind: 'scrutini', title: 'Scrutinio 5ET', startTime: '18:40:00', endTime: '19:25:00' },
-    // Mar 9 giugno
-    { date: '2026-06-09', kind: 'scrutini', title: 'Scrutinio 3GTB', startTime: '17:00:00', endTime: '17:45:00' },
-    { date: '2026-06-09', kind: 'scrutini', title: 'Scrutinio 4DT',  startTime: '17:45:00', endTime: '18:30:00' },
-    // Mer 10 giugno — nessuna classe di Renato
-    { date: '2026-06-10', kind: 'scrutini', title: 'Scrutini II quadrimestre',
-      startTime: '08:00:00', endTime: '19:15:00', notes: 'Nessuna tua classe in programma' },
-    // Gio 11 giugno
-    { date: '2026-06-11', kind: 'scrutini', title: 'Scrutinio 3CT', startTime: '13:15:00', endTime: '14:00:00' },
-    { date: '2026-06-11', kind: 'scrutini', title: 'Scrutinio 4CT', startTime: '14:00:00', endTime: '14:45:00' },
-    { date: '2026-06-11', kind: 'scrutini', title: 'Scrutinio 4AT', startTime: '14:45:00', endTime: '15:30:00' },
+    { date: '2026-11-01', label: 'Festa di Ognissanti' },
+    { date: '2026-11-02', label: 'Commemorazione dei defunti' },
+    { date: '2026-12-08', label: 'Immacolata Concezione' },
+    { date: '2026-12-23', label: 'Vacanze di Natale' },
+    { date: '2026-12-24', label: 'Vacanze di Natale' },
+    { date: '2026-12-25', label: 'Natale' },
+    { date: '2026-12-26', label: 'Santo Stefano' },
+    { date: '2026-12-28', label: 'Vacanze di Natale' },
+    { date: '2026-12-29', label: 'Vacanze di Natale' },
+    { date: '2026-12-30', label: 'Vacanze di Natale' },
+    { date: '2026-12-31', label: 'Vacanze di Natale' },
+    { date: '2027-01-01', label: 'Capodanno' },
+    { date: '2027-01-04', label: 'Vacanze di Natale' },
+    { date: '2027-01-05', label: 'Vacanze di Natale' },
+    { date: '2027-01-06', label: 'Epifania' },
+    { date: '2027-03-25', label: 'Vacanze di Pasqua' },
+    { date: '2027-03-26', label: 'Vacanze di Pasqua' },
+    { date: '2027-03-29', label: 'Lunedì dell\'Angelo' },
+    { date: '2027-03-30', label: 'Vacanze di Pasqua' },
+    { date: '2027-04-25', label: 'Festa della Liberazione' },
+    { date: '2027-05-01', label: 'Festa del Lavoro' },
+    { date: '2027-06-02', label: 'Festa della Repubblica' },
+    { date: '2027-06-29', label: 'Festa del Santo Patrono' },
   ])
 
   console.log('✅ Seed completato!')

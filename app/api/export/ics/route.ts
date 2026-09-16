@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/db'
 import { meetings, holidays } from '@/db/schema'
 import { asc } from 'drizzle-orm'
+import { SCHOOL_SHORT } from '@/lib/schedule'
 
 function escIcs(s: string): string {
   return s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n')
@@ -30,7 +31,7 @@ export async function GET() {
     'PRODID:-//Calendario Docente//IT',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    'X-WR-CALNAME:Calendario Docente IIS Einstein-Bachelet',
+    `X-WR-CALNAME:Calendario Docente ${SCHOOL_SHORT}`,
     'X-WR-TIMEZONE:Europe/Rome',
   ]
 

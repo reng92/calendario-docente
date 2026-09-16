@@ -4,7 +4,7 @@ import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister'
 
 export const metadata: Metadata = {
   title: 'Calendario docente',
-  description: 'Calendario impegni IIS Einstein-Bachelet',
+  description: 'Calendario impegni ISISS Magarotto',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,

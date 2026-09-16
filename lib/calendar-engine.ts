@@ -1,10 +1,10 @@
 import { format, eachDayOfInterval, parseISO } from 'date-fns'
 
-export type ClassInfo = { id: string; code: string; color: string; room: string | null; floor: string | null }
+export type ClassInfo = { id: string; code: string; color: string; subject: string | null; room: string | null; floor: string | null }
 
 export type CalendarInput = {
   classes: ClassInfo[]
-  weeklySlots: Array<{ weekday: number; hour: number; classId: string }>
+  weeklySlots: Array<{ weekday: number; hour: number; classId: string; subject?: string | null; room?: string | null }>
   coteachers: Array<{ classId: string; weekday: number; hour: number; teacherName: string; role: string | null }>
   holidays: Array<{ date: string; label: string }>
   dayOverrides: Array<{ date: string; hour: number | null; kind: string; classId: string | null; note: string | null }>
@@ -16,6 +16,10 @@ export type RenderedSlot = {
   hour: number
   class: ClassInfo | null
   kind: 'lesson' | 'padel' | 'assembly' | 'strike' | 'cover' | 'custom'
+  /** Materia dello slot (override per-slot, altrimenti quella della classe) */
+  subject: string | null
+  /** Aula dello slot (override per-slot, altrimenti quella della classe) */
+  room: string | null
   note: string | null
   coteachers: Array<{ name: string; role: string | null }>
 }
@@ -59,6 +63,8 @@ export function renderDays(input: CalendarInput, from: string, to: string): Rend
           hour: s.hour,
           class: klass,
           kind: override ? (override.kind as RenderedSlot['kind']) : 'lesson',
+          subject: s.subject ?? klass?.subject ?? null,
+          room: s.room ?? klass?.room ?? null,
           note: override?.note ?? null,
           coteachers: override ? [] : coteachersForSlot,
         })
@@ -76,6 +82,8 @@ export function renderDays(input: CalendarInput, from: string, to: string): Rend
           hour: override.hour,
           class: klass,
           kind: override.kind as RenderedSlot['kind'],
+          subject: klass?.subject ?? null,
+          room: klass?.room ?? null,
           note: override.note ?? null,
           coteachers: [],
         })
