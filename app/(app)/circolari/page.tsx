@@ -1,17 +1,13 @@
 import { db } from '@/db'
 import { circolariSeen } from '@/db/schema'
 import { desc } from 'drizzle-orm'
-import Link from 'next/link'
-import { ThemeToggle } from '@/components/ThemeToggle'
+import { AppHeader } from '@/components/AppHeader'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 
 export const dynamic = 'force-dynamic'
 
-const SOURCE_LABELS: Record<string, string> = {
-  scuola: '🏫 Circolari scuola',
-  usp: '📋 USP Roma',
-}
+import { SOURCE_LABELS } from '@/components/tokens'
 
 export default async function CircolariPage() {
   const rows = await db
@@ -27,19 +23,8 @@ export default async function CircolariPage() {
   }, {})
 
   return (
-    <main className="max-w-xl mx-auto pb-24">
-      <header className="sticky top-0 bg-stone-900 text-white p-4 z-10 flex items-center justify-between gap-2">
-        <h1 className="text-lg font-bold">Storico circolari</h1>
-        <div className="flex gap-1.5 items-center">
-          <ThemeToggle />
-          <Link
-            href="/"
-            className="bg-white/10 hover:bg-white/20 text-white text-[11px] font-semibold px-2 py-1.5 rounded-full"
-          >
-            ← Calendario
-          </Link>
-        </div>
-      </header>
+    <main className="max-w-xl mx-auto">
+      <AppHeader title="Circolari" />
 
       <div className="p-3 space-y-6">
         {Object.entries(grouped).map(([key, items]) => (

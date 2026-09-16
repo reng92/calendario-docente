@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { AppHeader } from '@/components/AppHeader'
 
 export default function AdminHome() {
   const sections = [
@@ -7,13 +8,8 @@ export default function AdminHome() {
     { href: '/admin/holidays', label: 'Festività', desc: 'Sospensioni delle lezioni' },
   ]
   return (
-    <main className="max-w-xl mx-auto pb-24">
-      <header className="sticky top-0 bg-stone-900 text-white p-4 z-10 flex items-center justify-between">
-        <h1 className="text-lg font-bold">Modifica dati</h1>
-        <Link href="/" className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-          ← Calendario
-        </Link>
-      </header>
+    <main className="max-w-xl mx-auto">
+      <AppHeader title="Gestione" back="/altro" />
       <div className="p-3 space-y-2">
         {sections.map(s => (
           <Link key={s.href} href={s.href} className="block bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-2xl px-4 py-3 hover:border-stone-400 dark:hover:border-stone-500 transition">

@@ -2,10 +2,10 @@ import { db } from '@/db'
 import { classes, weeklySlots, coteachers, holidays, dayOverrides, meetings } from '@/db/schema'
 import { renderDays } from '@/lib/calendar-engine'
 import Link from 'next/link'
-import { ThemeToggle } from '@/components/ThemeToggle'
+import { AppHeader } from '@/components/AppHeader'
 import { format, parseISO, addDays } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { hourLabel, LESSONS_END, LESSONS_END_LABEL } from '@/lib/schedule'
+import { hourLabel, LESSONS_END } from '@/lib/schedule'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,10 +57,6 @@ export default async function OggiPage() {
   const days = renderDays(input, todayIso, rangeEndIso)
   const today = days.find(d => d.date === todayIso)
 
-  const allDays = renderDays(input, todayIso, LESSONS_END)
-  const lessonDays = allDays.filter(d => d.date >= todayIso && d.slots.some(s => s.kind === 'lesson')).length
-  const scrutiniDays = allDays.filter(d => d.date >= todayIso && d.meetings.some(m => m.kind === 'scrutini')).length
-
   const nextLesson = !today?.isHoliday && today?.weekday !== undefined && today.weekday <= 4
     ? today?.slots.filter(s => s.kind === 'lesson')[0]
     : null
@@ -72,36 +68,8 @@ export default async function OggiPage() {
   const todayLabel = today ? format(parseISO(today.date), 'EEEE d MMMM', { locale: it }) : ''
 
   return (
-    <main className="max-w-xl mx-auto pb-24">
-      <header className="sticky top-0 bg-stone-900 text-white z-10">
-        <div className="px-4 py-3 flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-lg font-bold">Oggi</h1>
-            <p className="text-xs opacity-70 capitalize">{todayLabel}</p>
-          </div>
-          <div className="flex gap-1.5 items-center">
-            <ThemeToggle />
-            <Link href="/circolari" className="bg-white/10 hover:bg-white/20 text-white text-[11px] font-semibold px-2 py-1.5 rounded-full">
-              Circolari
-            </Link>
-            <Link href="/" className="bg-white/10 hover:bg-white/20 text-white text-[11px] font-semibold px-2 py-1.5 rounded-full">
-              Calendario
-            </Link>
-          </div>
-        </div>
-        <div className="bg-amber-500 text-stone-900 px-4 py-2 flex items-center justify-center gap-4 text-sm font-semibold">
-          <span className="flex items-baseline gap-1">
-            <span className="text-2xl font-extrabold tabular-nums leading-none">{lessonDays}</span>
-            <span className="text-xs uppercase tracking-wide">gg lezioni</span>
-          </span>
-          <span className="opacity-40">·</span>
-          <span className="flex items-baseline gap-1">
-            <span className="text-2xl font-extrabold tabular-nums leading-none">{scrutiniDays}</span>
-            <span className="text-xs uppercase tracking-wide">gg scrutini</span>
-          </span>
-          <span className="text-xs opacity-70">entro il {LESSONS_END_LABEL}</span>
-        </div>
-      </header>
+    <main className="max-w-xl mx-auto">
+      <AppHeader title="Oggi" subtitle={todayLabel} />
 
       <div className="p-3 space-y-4">
         {/* Today card */}
