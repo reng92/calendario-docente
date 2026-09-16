@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Bell, BellOff, BellRing } from 'lucide-react'
+import { cn } from '@/components/utils'
 
 type PushState = 'loading' | 'unsupported' | 'denied' | 'subscribed' | 'unsubscribed'
 
@@ -12,13 +14,24 @@ function urlBase64ToUint8Array(base64: string): ArrayBuffer {
   return arr.buffer as ArrayBuffer
 }
 
-export function PushSubscribeButton({ compact }: { compact?: boolean } = {}) {
+function isStandalone(): boolean {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || (navigator as Navigator & { standalone?: boolean }).standalone === true
+}
+
+function isIOS(): boolean {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+}
+
+export function PushSubscribeButton() {
   const [state, setState] = useState<PushState>('loading')
   const [busy, setBusy] = useState(false)
+  const [iosHint, setIosHint] = useState(false)
 
   useEffect(() => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
       setState('unsupported')
+      setIosHint(isIOS() && !isStandalone())
       return
     }
     if (Notification.permission === 'denied') {
@@ -82,58 +95,49 @@ export function PushSubscribeButton({ compact }: { compact?: boolean } = {}) {
     }
   }
 
-  if (state === 'loading') return null
-  if (state === 'unsupported') return null
-
-  if (compact) {
-    if (state === 'denied') return null
-    if (state === 'subscribed') return (
-      <button
-        onClick={unsubscribe}
-        disabled={busy}
-        title="Notifiche attive — clicca per disattivare"
-        className="text-lg leading-none"
-      >🔔</button>
-    )
-    return (
-      <button
-        onClick={subscribe}
-        disabled={busy}
-        title="Attiva notifiche push"
-        className="text-lg leading-none opacity-40 hover:opacity-100"
-      >🔔</button>
-    )
-  }
-
-  if (state === 'denied') return (
-    <p className="text-xs text-red-500">Notifiche bloccate. Abilitale nelle impostazioni del browser.</p>
-  )
+  const Icon = state === 'subscribed' ? BellRing : state === 'denied' ? BellOff : Bell
+  const title =
+    state === 'subscribed' ? 'Notifiche attive'
+    : state === 'denied' ? 'Notifiche bloccate'
+    : state === 'unsupported' ? 'Notifiche non disponibili'
+    : state === 'loading' ? 'Notifiche'
+    : 'Notifiche disattivate'
+  const description =
+    state === 'subscribed' ? 'Promemoria 10 minuti prima di ogni lezione e avviso per le nuove circolari, su questo dispositivo.'
+    : state === 'denied' ? 'Il browser blocca le notifiche per questo sito. Riattivale dalle impostazioni del sito nel browser, poi torna qui.'
+    : state === 'unsupported' ? (iosHint
+        ? 'Su iPhone le notifiche funzionano solo dopo aver aggiunto l’app alla schermata Home: Condividi → Aggiungi alla schermata Home.'
+        : 'Questo browser non supporta le notifiche push.')
+    : state === 'loading' ? 'Controllo dello stato in corso…'
+    : 'Ricevi un promemoria 10 minuti prima di ogni lezione e un avviso per le nuove circolari.'
 
   return (
-    <div className="flex flex-col gap-2">
-      {state === 'subscribed' ? (
-        <>
-          <div className="flex items-center gap-2 text-sm text-green-700 font-medium">
-            <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
-            Notifiche attive
-          </div>
+    <div className="flex items-start gap-3 px-4 py-3">
+      <span className={cn(
+        'mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full',
+        state === 'subscribed' ? 'bg-ok-soft text-ok' : state === 'denied' ? 'bg-danger-soft text-danger' : 'bg-surface-2 text-muted',
+      )}>
+        <Icon className="size-5" aria-hidden />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-body font-semibold text-ink">{title}</p>
+        <p className="mt-0.5 text-small text-muted">{description}</p>
+        {(state === 'subscribed' || state === 'unsubscribed') && (
           <button
-            onClick={unsubscribe}
+            type="button"
+            onClick={state === 'subscribed' ? unsubscribe : subscribe}
             disabled={busy}
-            className="text-xs text-stone-400 hover:text-red-600 underline"
+            className={cn(
+              'mt-3 inline-flex min-h-11 items-center justify-center rounded-control px-4 text-small font-semibold disabled:opacity-50',
+              state === 'subscribed'
+                ? 'border border-line text-ink hover:bg-surface-2'
+                : 'bg-accent text-accent-ink hover:opacity-90',
+            )}
           >
-            {busy ? '...' : 'Disattiva'}
+            {busy ? 'Un momento…' : state === 'subscribed' ? 'Disattiva su questo dispositivo' : 'Attiva le notifiche'}
           </button>
-        </>
-      ) : (
-        <button
-          onClick={subscribe}
-          disabled={busy}
-          className="rounded-lg bg-stone-900 text-white text-sm font-semibold px-4 py-2 disabled:opacity-50"
-        >
-          {busy ? 'Attivazione...' : '🔔 Attiva notifiche push'}
-        </button>
-      )}
+        )}
+      </div>
     </div>
   )
 }
