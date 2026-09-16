@@ -7,7 +7,7 @@ import { cn } from '@/components/utils'
 
 const TABS = [
   { href: '/oggi', label: 'Oggi', Icon: CalendarCheck2, match: (p: string) => p === '/oggi' },
-  { href: '/', label: 'Settimana', Icon: CalendarDays, match: (p: string) => p === '/' },
+  { href: '/', label: 'Calendario', Icon: CalendarDays, match: (p: string) => p === '/' },
   { href: '/circolari', label: 'Circolari', Icon: Megaphone, match: (p: string) => p.startsWith('/circolari') },
   { href: '/altro', label: 'Altro', Icon: SlidersHorizontal, match: (p: string) => p.startsWith('/altro') || p.startsWith('/admin') },
 ]

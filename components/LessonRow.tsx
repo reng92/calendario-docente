@@ -78,9 +78,9 @@ export function LessonRow({ slot, date, state = 'future', compact }: Props) {
         />
 
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
-          <div className="flex min-w-0 items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
             <ClassChip code={code} color={slot.class?.color} muted={disp} />
-            <span className={cn('min-w-0 truncate', disp ? 'text-small text-muted' : 'text-body font-semibold text-ink', isOverride && 'line-through decoration-muted/60 text-muted')}>
+            <span className={cn('min-w-0 flex-1 basis-24 break-words', disp ? 'text-small text-muted' : 'text-body font-semibold text-ink', isOverride && 'line-through decoration-muted/60 text-muted')}>
               {slot.subject ?? (isOverride ? '' : 'Lezione')}
             </span>
             {overrideLabel && (

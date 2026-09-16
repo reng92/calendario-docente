@@ -8,6 +8,10 @@ import { MeetingRow } from '@/components/MeetingRow'
 import { slotState, type RomeNow } from '@/components/now'
 import { timeToMin } from '@/lib/schedule'
 
+function cap(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
 export function DayCard({ day, now }: { day: RenderedDay; now?: RomeNow }) {
   const date = parseISO(day.date)
   const dayNum = format(date, 'd')
@@ -42,11 +46,11 @@ export function DayCard({ day, now }: { day: RenderedDay; now?: RomeNow }) {
       <header className="flex items-center gap-3 px-4 pt-3 pb-2">
         <div className={cn('text-display tabular leading-none', isToday ? 'text-accent' : 'text-ink')}>{dayNum}</div>
         <div className="min-w-0 leading-tight">
-          <div className={cn('text-heading capitalize', isToday ? 'text-accent' : 'text-ink')}>
-            {isToday ? 'Oggi' : weekdayName}
+          <div className={cn('text-heading', isToday ? 'text-accent' : 'text-ink')}>
+            {isToday ? 'Oggi' : cap(weekdayName)}
           </div>
-          <div className="text-small capitalize text-muted">
-            {isToday ? `${weekdayName} · ${monthName}` : monthName}
+          <div className="text-small text-muted">
+            {isToday ? `${cap(weekdayName)} · ${monthName}` : monthName}
           </div>
         </div>
       </header>

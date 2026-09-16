@@ -3,11 +3,13 @@ import { classes, weeklySlots, coteachers, holidays, dayOverrides, meetings } fr
 import { renderDays } from '@/lib/calendar-engine'
 import { CalendarView } from '@/components/CalendarView'
 import { AppHeader } from '@/components/AppHeader'
+import { getRomeNow } from '@/components/now'
 import { SCHOOL_SHORT, LESSONS_END, CALENDAR_FROM, CALENDAR_TO } from '@/lib/schedule'
 
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
+  const now = getRomeNow()
   const [classesData, weeklyData, coteachersData, holidaysData, overridesData, meetingsData] =
     await Promise.all([
       db.select().from(classes),
@@ -40,9 +42,9 @@ export default async function HomePage() {
 
   return (
     <main>
-      <AppHeader title="Settimana" subtitle={SCHOOL_SHORT} wide />
+      <AppHeader title="Calendario" subtitle={SCHOOL_SHORT} wide />
       <div className="mx-auto max-w-xl md:max-w-6xl">
-        <CalendarView days={days} />
+        <CalendarView days={days} initialNow={now} />
       </div>
     </main>
   )
