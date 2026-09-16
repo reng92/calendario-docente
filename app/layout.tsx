@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from 'next'
+import { Titillium_Web } from 'next/font/google'
 import './globals.css'
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister'
+
+const titillium = Titillium_Web({
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  variable: '--font-titillium',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Calendario docente',
@@ -8,36 +16,38 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'default',
     title: 'Calendario',
   },
 }
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#1c1917' },
-    { media: '(prefers-color-scheme: dark)', color: '#0c0a09' },
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#171e2b' },
   ],
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="it">
+    <html lang="it" suppressHydrationWarning className={titillium.variable}>
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <meta name="mobile-web-app-capable" content="yes" />
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
-            var t=localStorage.getItem('theme');
-            var d=window.matchMedia('(prefers-color-scheme:dark)').matches;
-            if(t==='dark'||(t!=='light'&&d)) document.documentElement.classList.add('dark');
+            try {
+              var t=localStorage.getItem('theme');
+              var d=window.matchMedia('(prefers-color-scheme:dark)').matches;
+              if(t==='dark'||(t!=='light'&&d)) document.documentElement.classList.add('dark');
+            } catch(e) {}
           })()
         ` }} />
       </head>
-      <body className="bg-stone-100 dark:bg-stone-950 text-stone-900 dark:text-stone-100 antialiased">
+      <body className="bg-bg text-ink font-sans antialiased">
         <ServiceWorkerRegister />
         {children}
       </body>
