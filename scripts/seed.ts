@@ -67,10 +67,10 @@ async function seed() {
     }))
   )
 
-  console.log('🚫 Festività e sospensioni (a.s. 2026/27 — verificare con il calendario d\'istituto)...')
+  console.log('🚫 Festività e sospensioni (calendario scolastico 2026/27 — sedi di Roma)...')
   await db.insert(holidays).values([
     { date: '2026-11-01', label: 'Festa di Ognissanti' },
-    { date: '2026-11-02', label: 'Commemorazione dei defunti' },
+    { date: '2026-12-07', label: 'Chiusura deliberata dalla scuola' },
     { date: '2026-12-08', label: 'Immacolata Concezione' },
     { date: '2026-12-23', label: 'Vacanze di Natale' },
     { date: '2026-12-24', label: 'Vacanze di Natale' },
@@ -86,6 +86,7 @@ async function seed() {
     { date: '2027-01-06', label: 'Epifania' },
     { date: '2027-03-25', label: 'Vacanze di Pasqua' },
     { date: '2027-03-26', label: 'Vacanze di Pasqua' },
+    { date: '2027-03-28', label: 'Pasqua' },
     { date: '2027-03-29', label: 'Lunedì dell\'Angelo' },
     { date: '2027-03-30', label: 'Vacanze di Pasqua' },
     { date: '2027-04-25', label: 'Festa della Liberazione' },

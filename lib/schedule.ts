@@ -10,7 +10,7 @@ export const SCHOOL_CITY = 'Roma'
 /** Anno scolastico 2026/27 — intervallo mostrato dal calendario */
 export const CALENDAR_FROM = '2026-09-14'
 export const CALENDAR_TO = '2027-06-30'
-/** Ultimo giorno di lezione (calendario scolastico Lazio 2026/27, da verificare) */
+/** Ultimo giorno di lezione (calendario scolastico 2026/27, sedi di Roma) */
 export const LESSONS_END = '2027-06-08'
 export const LESSONS_END_LABEL = '8 giu 2027'
 
