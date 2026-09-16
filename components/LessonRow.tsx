@@ -58,7 +58,7 @@ export function LessonRow({ slot, date, state = 'future', compact }: Props) {
         aria-label={`${slot.hour}ª ora, ${code}${slot.subject ? `, ${slot.subject}` : ''}${slot.room ? `, aula ${slot.room}` : ''}`}
         className={cn(
           'group flex w-full items-stretch gap-3 rounded-control px-2 text-left transition-colors active:bg-surface-2',
-          compact ? 'min-h-10 py-1' : 'min-h-12 py-1.5',
+          compact ? 'min-h-11 py-1' : 'min-h-12 py-1.5',
           state === 'current' && 'bg-accent-soft',
           state === 'past' && 'opacity-55',
         )}

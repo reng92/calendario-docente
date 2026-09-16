@@ -120,7 +120,7 @@ export function CalendarView({ days, initialNow }: { days: RenderedDay[]; initia
               aria-selected={mode === m}
               onClick={() => setMode(m)}
               className={cn(
-                'min-h-10 flex-1 rounded-[8px] text-small font-semibold transition-colors',
+                'min-h-11 flex-1 rounded-[8px] text-small font-semibold transition-colors',
                 mode === m ? 'bg-surface text-ink shadow-[0_1px_0_var(--line)]' : 'text-muted',
               )}
             >
@@ -132,7 +132,7 @@ export function CalendarView({ days, initialNow }: { days: RenderedDay[]; initia
           type="button"
           onClick={goToday}
           disabled={mode === 'week' ? isCurrentWeek : month === now.date.slice(0, 7)}
-          className="min-h-10 rounded-control border border-line px-3 text-small font-semibold text-accent disabled:opacity-40"
+          className="min-h-11 rounded-control border border-line px-3 text-small font-semibold text-accent disabled:opacity-40"
         >
           Oggi
         </button>

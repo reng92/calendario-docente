@@ -15,7 +15,7 @@ export function MeetingRow({ m, past, compact }: { m: MeetingLike; past?: boolea
   const end = m.endTime?.slice(0, 5)
   return (
     <div
-      className={cn('flex items-stretch gap-3 rounded-control px-2', compact ? 'min-h-10 py-1' : 'min-h-12 py-1.5', past && 'opacity-55')}
+      className={cn('flex items-stretch gap-3 rounded-control px-2', compact ? 'min-h-11 py-1' : 'min-h-12 py-1.5', past && 'opacity-55')}
       style={{ ['--ev' as string]: eventColor(m.kind) }}
     >
       <div className="flex w-11 shrink-0 flex-col justify-center tabular leading-none">
