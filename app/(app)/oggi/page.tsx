@@ -29,7 +29,10 @@ export default async function OggiPage() {
   const days = renderDays(
     {
       classes: classesData.map(c => ({ id: c.id, code: c.code, color: c.color, subject: c.subject, room: c.room, floor: c.floor })),
-      weeklySlots: weeklyData.map(w => ({ weekday: w.weekday, hour: w.hour, classId: w.classId!, subject: w.subject, room: w.room })),
+      weeklySlots: weeklyData.map(w => ({
+        weekday: w.weekday, hour: w.hour, classId: w.classId!, subject: w.subject, room: w.room,
+        validFrom: w.validFrom, validTo: w.validTo,
+      })),
       coteachers: coteachersData.map(c => ({
         classId: c.classId!, weekday: c.weekday!, hour: c.hour!, teacherName: c.teacherName, role: c.role,
       })),

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { CalendarPlus, ChevronRight, ClipboardList, Flag, Palette, Repeat } from 'lucide-react'
 import { db } from '@/db'
 import { holidays, weeklySlots } from '@/db/schema'
+import { isNull } from 'drizzle-orm'
 import { AppHeader } from '@/components/AppHeader'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { PushSubscribeButton } from '@/components/PushSubscribeButton'
@@ -46,7 +47,7 @@ export default async function AltroPage() {
   const now = getRomeNow()
   const [hol, slots] = await Promise.all([
     db.select({ date: holidays.date }).from(holidays),
-    db.select({ weekday: weeklySlots.weekday }).from(weeklySlots),
+    db.select({ weekday: weeklySlots.weekday }).from(weeklySlots).where(isNull(weeklySlots.validTo)),
   ])
   const holidaySet = new Set(hol.map(h => h.date))
   const lessonWeekdays = new Set(slots.map(s => s.weekday))

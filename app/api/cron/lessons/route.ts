@@ -5,7 +5,7 @@ import { classes, weeklySlots, coteachers, dayOverrides, holidays, notificationL
 import { sendPushToAll } from '@/lib/push'
 import { toZonedTime } from 'date-fns-tz'
 import { format } from 'date-fns'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, or, lte, gte, isNull } from 'drizzle-orm'
 import { HOUR_EFFECTIVE_START } from '@/lib/schedule'
 
 const TZ = 'Europe/Rome'
@@ -34,7 +34,13 @@ export async function POST(req: Request) {
   const slots = await db
     .select({ hour: weeklySlots.hour, classId: weeklySlots.classId, subject: weeklySlots.subject, room: weeklySlots.room })
     .from(weeklySlots)
-    .where(eq(weeklySlots.weekday, weekday))
+    .where(
+      and(
+        eq(weeklySlots.weekday, weekday),
+        lte(weeklySlots.validFrom, todayStr),
+        or(isNull(weeklySlots.validTo), gte(weeklySlots.validTo, todayStr)),
+      )
+    )
 
   const overrides = await db
     .select()

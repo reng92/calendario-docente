@@ -4,7 +4,11 @@ export type ClassInfo = { id: string; code: string; color: string; subject: stri
 
 export type CalendarInput = {
   classes: ClassInfo[]
-  weeklySlots: Array<{ weekday: number; hour: number; classId: string; subject?: string | null; room?: string | null }>
+  weeklySlots: Array<{
+    weekday: number; hour: number; classId: string; subject?: string | null; room?: string | null
+    /** Periodo di validità dello slot (ISO yyyy-MM-dd, estremi inclusi); assente = sempre valido */
+    validFrom?: string | null; validTo?: string | null
+  }>
   coteachers: Array<{ classId: string; weekday: number; hour: number; teacherName: string; role: string | null }>
   holidays: Array<{ date: string; label: string }>
   dayOverrides: Array<{ date: string; hour: number | null; kind: string; classId: string | null; note: string | null }>
@@ -49,7 +53,7 @@ export function renderDays(input: CalendarInput, from: string, to: string): Rend
 
     const slots: RenderedSlot[] = []
     if (!isHoliday && weekday <= 4 && (!input.lessonEndDate || iso <= input.lessonEndDate)) {
-      const slotsToday = input.weeklySlots.filter(s => s.weekday === weekday)
+      const slotsToday = input.weeklySlots.filter(s => s.weekday === weekday && slotValidOn(s, iso))
       for (const s of slotsToday) {
         const klass = classById.get(s.classId) ?? null
         const override = (overridesByDate.get(iso) ?? []).find(
@@ -73,8 +77,8 @@ export function renderDays(input: CalendarInput, from: string, to: string): Rend
       // Extra override slots (e.g. cover for a class/hour not in regular schedule)
       for (const override of overridesByDate.get(iso) ?? []) {
         if (override.classId == null || override.hour == null) continue
-        const alreadyHandled = input.weeklySlots.some(
-          s => s.weekday === weekday && s.hour === override.hour && s.classId === override.classId
+        const alreadyHandled = slotsToday.some(
+          s => s.hour === override.hour && s.classId === override.classId
         )
         if (alreadyHandled) continue
         const klass = classById.get(override.classId) ?? null
@@ -101,6 +105,16 @@ export function renderDays(input: CalendarInput, from: string, to: string): Rend
       ),
     }
   })
+}
+
+/** True se lo slot è in vigore nella data ISO indicata */
+export function slotValidOn(
+  s: { validFrom?: string | null; validTo?: string | null },
+  iso: string,
+): boolean {
+  if (s.validFrom && iso < s.validFrom) return false
+  if (s.validTo && iso > s.validTo) return false
+  return true
 }
 
 function groupBy<T, K>(arr: T[], keyFn: (t: T) => K): Map<K, T[]> {
