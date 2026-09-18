@@ -1,7 +1,7 @@
-const CACHE = 'calendario-v5';
+const CACHE = 'calendario-v6';
 // Niente pagine in precache: '/' ora redirige a /login e una risposta con redirect
 // servita dalla cache viene rifiutata dal browser per le navigazioni.
-const PRECACHE = ['/manifest.json', '/icon-192.png'];
+const PRECACHE = ['/manifest.json', '/icon-192.png?v=2'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
