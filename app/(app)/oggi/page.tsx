@@ -35,6 +35,7 @@ export default async function OggiPage() {
       })),
       coteachers: coteachersData.map(c => ({
         classId: c.classId!, weekday: c.weekday!, hour: c.hour!, teacherName: c.teacherName, role: c.role,
+        validFrom: c.validFrom, validTo: c.validTo,
       })),
       holidays: holidaysData.map(h => ({ date: h.date, label: h.label })),
       dayOverrides: overridesData.map(o => ({

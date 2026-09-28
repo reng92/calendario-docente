@@ -52,6 +52,9 @@ export const coteachers = pgTable('coteachers', {
   hour: smallint('hour'),
   teacherName: text('teacher_name').notNull(),
   role: text('role'),
+  /** Periodo di validità (estremi inclusi); null = senza limite */
+  validFrom: date('valid_from'),
+  validTo: date('valid_to'),
 })
 
 export const holidays = pgTable('holidays', {

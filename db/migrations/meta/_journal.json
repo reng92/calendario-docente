@@ -29,6 +29,13 @@
       "when": 1789541234883,
       "tag": "0003_weekly_slots_subject",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790577967506,
+      "tag": "0004_coteachers_validity",
+      "breakpoints": true
     }
   ]
 }

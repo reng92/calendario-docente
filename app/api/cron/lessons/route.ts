@@ -88,6 +88,8 @@ export async function POST(req: Request) {
           eq(coteachers.classId, slot.classId),
           eq(coteachers.weekday, weekday),
           eq(coteachers.hour, slot.hour),
+          or(isNull(coteachers.validFrom), lte(coteachers.validFrom, todayStr)),
+          or(isNull(coteachers.validTo), gte(coteachers.validTo, todayStr)),
         )
       )
 

@@ -9,7 +9,11 @@ export type CalendarInput = {
     /** Periodo di validità dello slot (ISO yyyy-MM-dd, estremi inclusi); assente = sempre valido */
     validFrom?: string | null; validTo?: string | null
   }>
-  coteachers: Array<{ classId: string; weekday: number; hour: number; teacherName: string; role: string | null }>
+  coteachers: Array<{
+    classId: string; weekday: number; hour: number; teacherName: string; role: string | null
+    /** Periodo di validità della compresenza; assente = sempre valida */
+    validFrom?: string | null; validTo?: string | null
+  }>
   holidays: Array<{ date: string; label: string }>
   dayOverrides: Array<{ date: string; hour: number | null; kind: string; classId: string | null; note: string | null }>
   meetings: Array<{ id: string; date: string; startTime: string | null; endTime: string | null; kind: string; title: string; notes: string | null }>
@@ -60,7 +64,7 @@ export function renderDays(input: CalendarInput, from: string, to: string): Rend
           o => o.hour === s.hour && o.classId === s.classId
         )
         const coteachersForSlot = input.coteachers
-          .filter(c => c.classId === s.classId && c.weekday === weekday && c.hour === s.hour)
+          .filter(c => c.classId === s.classId && c.weekday === weekday && c.hour === s.hour && slotValidOn(c, iso))
           .map(c => ({ name: c.teacherName, role: c.role }))
 
         slots.push({
