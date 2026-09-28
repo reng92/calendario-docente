@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { RenderedSlot } from '@/lib/calendar-engine'
-import { HOUR_EFFECTIVE_START, HOUR_END } from '@/lib/schedule'
+import { scansione } from '@/lib/schedule'
 import { cn } from '@/components/utils'
 import { classVar, isDisposizione, OVERRIDE_KINDS } from '@/components/tokens'
 import type { SlotState } from '@/components/now'
@@ -41,8 +41,9 @@ export function LessonRow({ slot, date, state = 'future', compact }: Props) {
   const disp = isDisposizione(slot.class?.code)
   const isOverride = slot.kind !== 'lesson'
   const overrideLabel = isOverride ? OVERRIDE_KINDS[slot.kind]?.short ?? 'Variazione' : null
-  const start = stripLeadingZero(HOUR_EFFECTIVE_START[slot.hour] ?? '')
-  const end = stripLeadingZero(HOUR_END[slot.hour] ?? '')
+  const scan = scansione(date)
+  const start = stripLeadingZero(scan.effectiveStart[slot.hour] ?? '')
+  const end = stripLeadingZero(scan.end[slot.hour] ?? '')
   const cot = slot.coteachers.map(c => c.name).join(', ')
 
   const secondary = [

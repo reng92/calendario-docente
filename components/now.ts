@@ -1,4 +1,4 @@
-import { BREAKS, HOUR_EFFECTIVE_START, HOUR_END, HOUR_START, timeToMin } from '@/lib/schedule'
+import { scansione, timeToMin } from '@/lib/schedule'
 
 export type RomeNow = { date: string; minutes: number }
 
@@ -24,17 +24,18 @@ export function slotState(hour: number, dayDate: string, now: RomeNow | undefine
   if (!now) return 'future'
   if (dayDate < now.date) return 'past'
   if (dayDate > now.date) return 'future'
-  const start = timeToMin(HOUR_EFFECTIVE_START[hour] ?? HOUR_START[hour] ?? '00:00')
-  const end = timeToMin(HOUR_END[hour] ?? '00:00')
+  const scan = scansione(dayDate)
+  const start = timeToMin(scan.effectiveStart[hour] ?? scan.start[hour] ?? '00:00')
+  const end = timeToMin(scan.end[hour] ?? '00:00')
   if (now.minutes >= end) return 'past'
   if (now.minutes >= start) return 'current'
   if (nextHour === hour) return 'next'
   return 'future'
 }
 
-/** Intervallo che cade dopo l'ora indicata, se esiste */
-export function breakAfter(hour: number): { label: string; start: number; end: number } | null {
-  const b = BREAKS[hour]
+/** Intervallo che cade dopo l'ora indicata, nel giorno indicato, se esiste */
+export function breakAfter(hour: number, date: string): { label: string; start: number; end: number } | null {
+  const b = scansione(date).breaks[hour]
   if (!b) return null
   const [s, e] = b.split('–')
   return { label: b, start: timeToMin(s), end: timeToMin(e) }

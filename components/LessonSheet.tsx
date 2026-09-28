@@ -5,7 +5,7 @@ import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { X } from 'lucide-react'
 import type { RenderedSlot } from '@/lib/calendar-engine'
-import { HOUR_EFFECTIVE_START, HOUR_END, HOUR_START } from '@/lib/schedule'
+import { scansione } from '@/lib/schedule'
 import { Sheet, SheetContent, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet'
 import { isDisposizione, overrideLabel } from '@/components/tokens'
 import { ClassChip } from '@/components/LessonRow'
@@ -31,9 +31,10 @@ export function LessonSheet({ open, onOpenChange, slot, date }: Props) {
   const code = slot.class?.code ?? '—'
   const disp = isDisposizione(slot.class?.code)
   const isOverride = slot.kind !== 'lesson'
-  const nominal = `${HOUR_START[slot.hour]?.replace(/^0/, '')}–${HOUR_END[slot.hour]?.replace(/^0/, '')}`
-  const effective = HOUR_EFFECTIVE_START[slot.hour]
-  const startsLate = effective && effective !== HOUR_START[slot.hour]
+  const scan = scansione(date)
+  const nominal = `${scan.start[slot.hour]?.replace(/^0/, '')}–${scan.end[slot.hour]?.replace(/^0/, '')}`
+  const effective = scan.effectiveStart[slot.hour]
+  const startsLate = effective && effective !== scan.start[slot.hour]
   const dayLabel = format(parseISO(date), 'EEEE d MMMM', { locale: it })
 
   return (

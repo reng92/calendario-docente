@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 import type { RenderedDay, RenderedSlot } from '@/lib/calendar-engine'
-import { BREAKS, HOUR_EFFECTIVE_START, HOUR_END, HOUR_START, timeToMin } from '@/lib/schedule'
+import { scansione, timeToMin } from '@/lib/schedule'
 import { LessonRow, BreakRow, ClassChip } from '@/components/LessonRow'
 import { MeetingRow } from '@/components/MeetingRow'
 import { getRomeNow, slotState, breakAfter, formatMinutes, type RomeNow } from '@/components/now'
@@ -37,25 +37,26 @@ function computeState(day: RenderedDay | null, now: RomeNow): NowState {
   if (day.weekday > 4) return { kind: 'weekend' }
   const slots = [...day.slots].sort((a, b) => a.hour - b.hour)
   if (slots.length === 0) return { kind: 'none' }
+  const scan = scansione(day.date)
 
   for (let i = 0; i < slots.length; i++) {
     const s = slots[i]
-    const start = timeToMin(HOUR_EFFECTIVE_START[s.hour] ?? HOUR_START[s.hour] ?? '00:00')
-    const end = timeToMin(HOUR_END[s.hour] ?? '00:00')
+    const start = timeToMin(scan.effectiveStart[s.hour] ?? scan.start[s.hour] ?? '00:00')
+    const end = timeToMin(scan.end[s.hour] ?? '00:00')
     if (now.minutes < start) {
       // siamo prima di questo slot: intervallo in corso?
       const prev = slots[i - 1]
-      const brk = prev ? breakAfter(prev.hour) : null
+      const brk = prev ? breakAfter(prev.hour, day.date) : null
       if (brk && now.minutes >= brk.start && now.minutes < brk.end) {
-        return { kind: 'break', next: s, endsIn: brk.end - now.minutes, until: strip(BREAKS[prev.hour]?.split('–')[1]) }
+        return { kind: 'break', next: s, endsIn: brk.end - now.minutes, until: strip(scan.breaks[prev.hour]?.split('–')[1]) }
       }
       return { kind: 'before', slot: s, startsIn: start - now.minutes }
     }
     if (now.minutes < end) {
       // dentro lo slot; l'intervallo può "mangiare" gli ultimi minuti dell'ora precedente
-      const brk = breakAfter(s.hour)
+      const brk = breakAfter(s.hour, day.date)
       if (brk && now.minutes >= brk.start && now.minutes < brk.end) {
-        return { kind: 'break', next: slots[i + 1] ?? null, endsIn: brk.end - now.minutes, until: strip(BREAKS[s.hour]?.split('–')[1]) }
+        return { kind: 'break', next: slots[i + 1] ?? null, endsIn: brk.end - now.minutes, until: strip(scan.breaks[s.hour]?.split('–')[1]) }
       }
       return { kind: 'during', slot: s, endsIn: end - now.minutes }
     }
@@ -124,11 +125,12 @@ function Hero({ state, day }: { state: NowState; day: RenderedDay | null }) {
 
   const s = state.slot
   const disp = isDisposizione(s.class?.code)
-  const range = `${strip(HOUR_EFFECTIVE_START[s.hour])}–${strip(HOUR_END[s.hour])}`
+  const scan = scansione(day?.date ?? '')
+  const range = `${strip(scan.effectiveStart[s.hour])}–${strip(scan.end[s.hour])}`
   const label = state.kind === 'during' ? 'Adesso' : 'Prossima'
   const timing = state.kind === 'during'
     ? `Finisce tra ${formatMinutes(state.endsIn)}`
-    : state.startsIn <= 90 ? `Inizia tra ${formatMinutes(state.startsIn)}` : `Inizia alle ${strip(HOUR_EFFECTIVE_START[s.hour])}`
+    : state.startsIn <= 90 ? `Inizia tra ${formatMinutes(state.startsIn)}` : `Inizia alle ${strip(scan.effectiveStart[s.hour])}`
   const cot = s.coteachers.map(c => c.name).join(', ')
 
   return (
@@ -160,6 +162,7 @@ export function TodayView({ today, nextDay, initialNow }: Props) {
 
   const state = computeState(today, now)
   const slots = today ? [...today.slots].sort((a, b) => a.hour - b.hour) : []
+  const breaks = today ? scansione(today.date).breaks : {}
   const nextHour = slots.find(s => slotState(s.hour, today!.date, now) === 'future')?.hour
   const isMeetingPast = (m: { startTime: string | null; endTime: string | null }) => {
     const end = m.endTime ?? m.startTime
@@ -178,7 +181,7 @@ export function TodayView({ today, nextDay, initialNow }: Props) {
               {slots.map((s, idx) => (
                 <div key={`${s.hour}-${s.class?.id ?? 'x'}`}>
                   <LessonRow slot={s} date={today.date} state={slotState(s.hour, today.date, now, nextHour)} />
-                  {BREAKS[s.hour] && idx < slots.length - 1 && <BreakRow label={BREAKS[s.hour]} />}
+                  {breaks[s.hour] && idx < slots.length - 1 && <BreakRow label={breaks[s.hour]} />}
                 </div>
               ))}
             </>

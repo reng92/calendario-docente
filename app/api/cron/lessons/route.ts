@@ -6,7 +6,7 @@ import { sendPushToAll } from '@/lib/push'
 import { toZonedTime } from 'date-fns-tz'
 import { format } from 'date-fns'
 import { eq, and, or, lte, gte, isNull } from 'drizzle-orm'
-import { HOUR_EFFECTIVE_START } from '@/lib/schedule'
+import { scansione } from '@/lib/schedule'
 
 const TZ = 'Europe/Rome'
 
@@ -47,9 +47,11 @@ export async function POST(req: Request) {
     .from(dayOverrides)
     .where(eq(dayOverrides.date, todayStr))
 
+  const scan = scansione(todayStr)
+
   for (const slot of slots) {
     if (!slot.classId) continue
-    const startTimeStr = HOUR_EFFECTIVE_START[slot.hour]
+    const startTimeStr = scan.effectiveStart[slot.hour]
     if (!startTimeStr) continue
 
     const [h, m] = startTimeStr.split(':').map(Number)

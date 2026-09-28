@@ -14,59 +14,49 @@ export const CALENDAR_TO = '2027-06-30'
 export const LESSONS_END = '2027-06-08'
 export const LESSONS_END_LABEL = '8 giu 2027'
 
-/** Orario nominale di inizio di ogni ora (HH:MM) */
-export const HOUR_START: Record<number, string> = {
-  1: '08:10',
-  2: '09:10',
-  3: '10:10',
-  4: '11:10',
-  5: '12:10',
-  6: '13:10',
-  7: '14:10',
+export type Scansione = {
+  /** Orario nominale di inizio di ogni ora (HH:MM) */
+  start: Record<number, string>
+  /** Orario nominale di fine di ogni ora (HH:MM) */
+  end: Record<number, string>
+  /** Inizio effettivo della lezione, quando diverso da quello nominale (dopo l'intervallo) */
+  effectiveStart: Record<number, string>
+  /** Intervalli: chiave = ora DOPO la quale cade la pausa */
+  breaks: Record<number, string>
 }
 
-/** Orario nominale di fine di ogni ora (HH:MM) */
-export const HOUR_END: Record<number, string> = {
-  1: '09:10',
-  2: '10:10',
-  3: '11:10',
-  4: '12:10',
-  5: '13:10',
-  6: '14:10',
-  7: '15:10',
+/** Scansione standard. La 3ª ora parte dopo l'intervallo (10:00–10:20). */
+const SCANSIONE_BASE: Scansione = {
+  start: { 1: '08:10', 2: '09:10', 3: '10:10', 4: '11:10', 5: '12:10', 6: '13:10', 7: '14:10' },
+  end:   { 1: '09:10', 2: '10:10', 3: '11:10', 4: '12:10', 5: '13:10', 6: '14:10', 7: '15:10' },
+  effectiveStart: { 1: '08:10', 2: '09:10', 3: '10:20', 4: '11:10', 5: '12:10', 6: '13:10', 7: '14:10' },
+  breaks: { 2: '10:00–10:20' },
 }
 
 /**
- * Inizio effettivo della lezione, quando diverso da quello nominale.
- * La 3ª ora parte dopo l'intervallo (10:00–10:20).
+ * Scansioni ridotte per periodi specifici (inizio anno: 5 ore, poi 6, poi 7).
+ * Nuova scansione = aggiungere una voce con from/to (inclusivi, yyyy-MM-dd).
  */
-export const HOUR_EFFECTIVE_START: Record<number, string> = {
-  ...HOUR_START,
-  3: '10:20',
-}
+const SCANSIONI_PERIODO: Array<{ from: string; to: string; scan: Scansione }> = [
+  {
+    // Settimana 28 set – 2 ott 2026: 5 ore, ricreazione 10:50–11:10
+    from: '2026-09-28',
+    to: '2026-10-02',
+    scan: {
+      start: { 1: '08:10', 2: '09:10', 3: '10:00', 4: '11:00', 5: '12:00' },
+      end:   { 1: '09:10', 2: '10:00', 3: '11:00', 4: '12:00', 5: '12:50' },
+      effectiveStart: { 1: '08:10', 2: '09:10', 3: '10:00', 4: '11:10', 5: '12:00' },
+      breaks: { 3: '10:50–11:10' },
+    },
+  },
+]
 
-/** Intervalli: chiave = ora DOPO la quale cade la pausa */
-export const BREAKS: Record<number, string> = {
-  2: '10:00–10:20',
-}
-
-export function hourLabel(hour: number): string {
-  return HOUR_START[hour] ?? ''
-}
-
-export function hourRange(hour: number): string {
-  const s = HOUR_START[hour]
-  const e = HOUR_END[hour]
-  return s && e ? `${s.replace(/^0/, '')}–${e.replace(/^0/, '')}` : ''
+/** Scansione oraria in vigore nel giorno indicato (yyyy-MM-dd) */
+export function scansione(date: string): Scansione {
+  return SCANSIONI_PERIODO.find(p => date >= p.from && date <= p.to)?.scan ?? SCANSIONE_BASE
 }
 
 export function timeToMin(t: string): number {
   const [h, m] = t.split(':').map(Number)
   return h * 60 + m
-}
-
-/** Minuto (0-1439) in cui termina l'ora indicata */
-export function hourEndMin(hour: number): number {
-  const e = HOUR_END[hour]
-  return e ? timeToMin(e) : 0
 }

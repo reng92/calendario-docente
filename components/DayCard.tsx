@@ -1,12 +1,11 @@
 import type { RenderedDay } from '@/lib/calendar-engine'
 import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { BREAKS } from '@/lib/schedule'
 import { cn } from '@/components/utils'
 import { LessonRow, BreakRow } from '@/components/LessonRow'
 import { MeetingRow } from '@/components/MeetingRow'
 import { slotState, type RomeNow } from '@/components/now'
-import { timeToMin } from '@/lib/schedule'
+import { scansione, timeToMin } from '@/lib/schedule'
 
 function cap(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
@@ -19,6 +18,7 @@ export function DayCard({ day, now }: { day: RenderedDay; now?: RomeNow }) {
   const monthName = format(date, 'MMMM', { locale: it })
   const isToday = !!now && day.date === now.date
   const isPast = !!now && day.date < now.date
+  const breaks = scansione(day.date).breaks
   const empty = !day.isHoliday && day.slots.length === 0 && day.meetings.length === 0
 
   const nextHour = isToday
@@ -69,7 +69,7 @@ export function DayCard({ day, now }: { day: RenderedDay; now?: RomeNow }) {
             {day.slots.map((s, idx) => (
               <div key={`${s.hour}-${s.class?.id ?? 'x'}`}>
                 <LessonRow slot={s} date={day.date} state={slotState(s.hour, day.date, now, nextHour)} />
-                {BREAKS[s.hour] && idx < day.slots.length - 1 && <BreakRow label={BREAKS[s.hour]} />}
+                {breaks[s.hour] && idx < day.slots.length - 1 && <BreakRow label={breaks[s.hour]} />}
               </div>
             ))}
           </div>
