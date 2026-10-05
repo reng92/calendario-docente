@@ -11,8 +11,9 @@ import { sql } from 'drizzle-orm'
  *   - 14–18 set 2026: orario provvisorio (1MAN, 3MAN, ore "D" = propria classe)
  *   - 21–25 set 2026: orario in vigore dal 21 al 25 settembre (5 classi,
  *     cattedra intera B015, 18 ore, tutte in compresenza)
- *   - dal 28 set 2026: orario della settimana 28 set – 2 ott (5 ore al giorno,
- *     scansione in lib/schedule.ts)
+ *   - 28 set – 4 ott 2026: orario a 5 ore al giorno (scansione in lib/schedule.ts)
+ *   - dal 5 ott 2026: orario a 6 ore (uscita 13:40); compare 2LSA e le ore "D"
+ *     su una classe (1MAN, 2LSA, 3MAN) oltre a quelle "Propria classe"
  *
  * Quando arriva un nuovo orario: chiudere gli slot correnti con valid_to,
  * aggiungere i nuovi con valid_from e rilanciare `pnpm db:seed`.
@@ -27,6 +28,8 @@ const PROVVISORIO_TO = '2026-09-20'
 const ORARIO_21_FROM = '2026-09-21'
 const ORARIO_21_TO = '2026-09-27'
 const ORARIO_28_FROM = '2026-09-28'
+const ORARIO_28_TO = '2026-10-04'
+const ORARIO_5OTT_FROM = '2026-10-05'
 
 type SlotRow = [wd: number, hour: number, code: string, subject?: string, room?: string]
 type CotRow = [wd: number, hour: number, code: string, name: string]
@@ -42,7 +45,9 @@ async function seed() {
     { code: '3MAN', color: '#C62828', subject: 'TTIM', room: 'II.26', floor: null },
     { code: '4MAN', color: '#1565C0', subject: 'TTRI', room: 'II.23', floor: null },
     { code: '4IAN', color: '#5E35B1', subject: 'TGPP', room: 'II.24', floor: null },
-    // Solo per l'orario provvisorio del 14–18 settembre
+    // Dal 5 ottobre: solo un'ora "D" il mercoledì
+    { code: '2LSA', color: '#2E7D32', subject: 'D',    room: 'S.06 25', floor: null },
+    // Ore "D" = propria classe (provvisorio 14–18/9 e orari successivi)
     { code: 'D',    color: '#B08900', subject: 'Propria classe', room: null, floor: null },
   ]
   const insertedClasses = await db.insert(classes).values(classData).returning()
@@ -124,6 +129,34 @@ async function seed() {
     [4, 5, '2MAN', 'FIS',  'T.15'],
   ]
 
+  console.log('📅 Orario dal 5 ottobre...')
+  const orario5ott: SlotRow[] = [
+    // Lunedì
+    [0, 2, '3MAN', 'TTIM', 'II.26'],
+    [0, 3, '4MAN', 'TTRI', LAB],
+    [0, 4, 'D'],
+    [0, 5, '3MAN', 'TTRI', 'II.26'],
+    [0, 6, 'D'],
+    // Martedì
+    [1, 1, '4MAN', 'TTRI', LAB],
+    [1, 2, '4MAN', 'TTRI', LAB],
+    // Mercoledì
+    [2, 1, '3MAN', 'TTIM', LAB],
+    [2, 2, '3MAN', 'TTIM', LAB],
+    [2, 3, '3MAN', 'TEEA', LAB],
+    [2, 4, '3MAN', 'TEEA', LAB],
+    [2, 6, '2LSA', 'D',    'S.06 25'],
+    // Giovedì
+    [3, 1, '1MAN', 'D',    'T.09'],
+    [3, 2, '2MAN', 'FIS',  'T.15'],
+    [3, 3, 'D'],
+    // Venerdì
+    [4, 3, '1MAN', 'D',    'T.09'],
+    [4, 4, '4IAN', 'TGPP', 'II.24'],
+    [4, 5, '3MAN', 'TEEA', 'II.26'],
+    [4, 6, '3MAN', 'D',    'II.26'],
+  ]
+
   const toRow = (validFrom: string, validTo: string | null) =>
     ([wd, h, code, subject, room]: SlotRow) => ({
       weekday: wd, hour: h, classId: byCode[code],
@@ -133,7 +166,8 @@ async function seed() {
   await db.insert(weeklySlots).values([
     ...provvisorio.map(toRow(PROVVISORIO_FROM, PROVVISORIO_TO)),
     ...orario21.map(toRow(ORARIO_21_FROM, ORARIO_21_TO)),
-    ...orario28.map(toRow(ORARIO_28_FROM, null)),
+    ...orario28.map(toRow(ORARIO_28_FROM, ORARIO_28_TO)),
+    ...orario5ott.map(toRow(ORARIO_5OTT_FROM, null)),
   ])
 
   console.log('👥 Compresenze...')
@@ -163,6 +197,17 @@ async function seed() {
     [4, 1, '4MAN', 'Lavoro'], [4, 2, '4MAN', 'Lavoro'], [4, 3, '3MAN', 'Valente'],
     // 2MAN (FIS) e 4IAN (TGPP): supplente non ancora nominato
   ]
+  const cot5ott: CotRow[] = [
+    // Lunedì
+    [0, 2, '3MAN', 'Valente'], [0, 3, '4MAN', 'Lavoro'], [0, 5, '3MAN', 'Lavoro'],
+    // Martedì
+    [1, 1, '4MAN', 'Lavoro'], [1, 2, '4MAN', 'Lavoro'],
+    // Mercoledì
+    [2, 1, '3MAN', 'Valente'], [2, 2, '3MAN', 'Valente'], [2, 3, '3MAN', 'Lavoro'], [2, 4, '3MAN', 'Lavoro'],
+    // Venerdì
+    [4, 5, '3MAN', 'Lavoro'],
+    // 2MAN (FIS), 4IAN (TGPP) e ore "D": nessun co-docente
+  ]
   const toCot = (validFrom: string, validTo: string | null) =>
     ([wd, h, code, name]: CotRow) => ({
       classId: byCode[code], weekday: wd, hour: h, teacherName: name, role: 'altro',
@@ -170,7 +215,8 @@ async function seed() {
     })
   await db.insert(coteachers).values([
     ...cot21.map(toCot(ORARIO_21_FROM, ORARIO_21_TO)),
-    ...cot28.map(toCot(ORARIO_28_FROM, null)),
+    ...cot28.map(toCot(ORARIO_28_FROM, ORARIO_28_TO)),
+    ...cot5ott.map(toCot(ORARIO_5OTT_FROM, null)),
   ])
 
   console.log('🚫 Festività e sospensioni (calendario scolastico 2026/27 — sedi di Roma)...')

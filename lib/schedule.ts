@@ -49,6 +49,18 @@ const SCANSIONI_PERIODO: Array<{ from: string; to: string; scan: Scansione }> = 
       breaks: { 3: '10:50–11:10' },
     },
   },
+  {
+    // Dal 5 ott 2026: 6 ore (uscita 13:40), ricreazione 10:50–11:10.
+    // `to` provvisorio: chiuderlo quando arriva la scansione a 7 ore.
+    from: '2026-10-05',
+    to: CALENDAR_TO,
+    scan: {
+      start: { 1: '08:10', 2: '09:10', 3: '10:00', 4: '11:00', 5: '12:00', 6: '12:50' },
+      end:   { 1: '09:10', 2: '10:00', 3: '11:00', 4: '12:00', 5: '12:50', 6: '13:40' },
+      effectiveStart: { 1: '08:10', 2: '09:10', 3: '10:00', 4: '11:10', 5: '12:00', 6: '12:50' },
+      breaks: { 3: '10:50–11:10' },
+    },
+  },
 ]
 
 /** Scansione oraria in vigore nel giorno indicato (yyyy-MM-dd) */
