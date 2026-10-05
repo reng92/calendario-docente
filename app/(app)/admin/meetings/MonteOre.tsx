@@ -46,7 +46,7 @@ export function MonteOre({ data, anno }: { data: Record<Comma, Monte>; anno: str
           )
         })}
       </div>
-      <p className="px-1 pt-2 text-small text-muted">CCNL art. 29 c. 3. Scrutini ed esami non si contano. Tocca la matita su un impegno per correggere l’orario effettivo.</p>
+      <p className="px-1 pt-2 text-small text-muted">Tocca la matita su un impegno per correggere l’orario effettivo.</p>
     </section>
   )
 }

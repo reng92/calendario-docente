@@ -7,6 +7,7 @@ import { getRomeNow } from '@/components/now'
 import { MeetingForm } from './MeetingForm'
 import { MeetingRow } from './MeetingRow'
 import { MonteOre } from './MonteOre'
+import { FaqOre } from './FaqOre'
 import { annoScolastico, monteOre } from '@/lib/impegni'
 
 export const dynamic = 'force-dynamic'
@@ -29,6 +30,7 @@ export default async function MeetingsPage() {
         }
       />
       <div className="space-y-5 p-4">
+        <FaqOre />
         <MonteOre data={monteOre(rows, now)} anno={annoScolastico(now.date).label} />
         {rows.length === 0 && (
           <div className="rounded-card border border-line bg-surface px-4 py-8 text-center">
