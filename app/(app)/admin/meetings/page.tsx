@@ -8,7 +8,9 @@ import { MeetingForm } from './MeetingForm'
 import { MeetingRow } from './MeetingRow'
 import { MonteOre } from './MonteOre'
 import { FaqOre } from './FaqOre'
-import { annoScolastico, monteOre } from '@/lib/impegni'
+import { Previsione } from './Previsione'
+import { PLANNING } from '@/lib/planning'
+import { annoScolastico, monteOre, previsione } from '@/lib/impegni'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,6 +34,7 @@ export default async function MeetingsPage() {
       <div className="space-y-5 p-4">
         <FaqOre />
         <MonteOre data={monteOre(rows, now)} anno={annoScolastico(now.date).label} />
+        <Previsione data={previsione(rows, PLANNING, now)} />
         {rows.length === 0 && (
           <div className="rounded-card border border-line bg-surface px-4 py-8 text-center">
             <p className="text-heading text-ink">Nessun impegno registrato</p>

@@ -64,6 +64,64 @@ export function monteOre(
   return out
 }
 
+export type Tappa = { date: string; title: string; min: number; cum: number; stima: boolean }
+
+export type Previsione = {
+  /** Impegni ancora da svolgere, in ordine di data, con il totale progressivo */
+  tappe: Tappa[]
+  /** Totale previsto a fine anno (svolti + registrati + planning) */
+  totale: number
+  /** Giorno in cui il progressivo arriva a 40 h, se ci arriva */
+  limiteIl: string | null
+  /** Ultimo impegno previsto nel comma */
+  ultimo: string | null
+}
+
+/**
+ * Proiezione a fine anno per comma: parte dalle ore svolte, aggiunge gli
+ * impegni registrati ancora da svolgere e le voci del planning d'istituto
+ * non ancora registrate (stesso giorno e comma = già registrata).
+ */
+export function previsione(
+  rows: Array<{ date: string; startTime: string | null; endTime: string | null; kind: string; title: string }>,
+  planning: Array<{ date: string; kind: string; title: string; min: number }>,
+  now: { date: string; minutes: number },
+): Record<Comma, Previsione> {
+  const as = annoScolastico(now.date)
+  const monte = monteOre(rows, now)
+  const registrati = new Set<string>()
+  const future: Record<Comma, Omit<Tappa, 'cum'>[]> = { a: [], b: [] }
+
+  for (const r of rows) {
+    const c = commaOf(r.kind)
+    if (!c || r.date < as.from || r.date > as.to) continue
+    registrati.add(`${r.date}:${c}`)
+    const min = durataMin(r.startTime, r.endTime)
+    const done = r.date < now.date || (r.date === now.date && toMin(r.endTime ?? '00:00') <= now.minutes)
+    if (min > 0 && !done) future[c].push({ date: r.date, title: r.title, min, stima: false })
+  }
+  for (const p of planning) {
+    const c = commaOf(p.kind)
+    if (!c || p.date < now.date || p.date > as.to || registrati.has(`${p.date}:${c}`)) continue
+    future[c].push({ date: p.date, title: p.title, min: p.min, stima: true })
+  }
+
+  const out = {} as Record<Comma, Previsione>
+  for (const c of ['a', 'b'] as const) {
+    let cum = monte[c].svolti
+    let limiteIl: string | null = cum >= LIMITE_ORE * 60 ? now.date : null
+    const tappe = future[c]
+      .sort((x, y) => x.date.localeCompare(y.date))
+      .map(t => {
+        cum += t.min
+        if (!limiteIl && cum >= LIMITE_ORE * 60) limiteIl = t.date
+        return { ...t, cum }
+      })
+    out[c] = { tappe, totale: cum, limiteIl, ultimo: tappe.at(-1)?.date ?? null }
+  }
+  return out
+}
+
 /** 75 → "1 h 15′" */
 export function formatOre(min: number): string {
   const h = Math.floor(min / 60)
