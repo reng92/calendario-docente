@@ -1,4 +1,4 @@
-const CACHE = 'calendario-v11';
+const CACHE = 'calendario-v12';
 // Niente pagine in precache: '/' ora redirige a /login e una risposta con redirect
 // servita dalla cache viene rifiutata dal browser per le navigazioni.
 const PRECACHE = ['/manifest.json', '/icon-192.png?v=2'];

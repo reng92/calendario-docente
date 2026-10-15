@@ -1,7 +1,7 @@
 /**
  * Impegni collegiali previsti dal planning annuale d'istituto 2026/27
- * (Planning_IPSIA LICEO.pdf), filtrati sulle mie classi: 1–4 MAN, 4IAN
- * (triennio IAN), 2LSA (liceo scienze applicate).
+ * (Planning_IPSIA LICEO.pdf), filtrati sulle mie classi: 1–4 MAN e 4IAN
+ * (triennio IAN).
  *
  * Servono solo alla previsione del monte ore: non compaiono nel calendario.
  * Per i consigli di classe il planning dà la fascia dell'indirizzo, non
@@ -35,11 +35,8 @@ export const PLANNING: PlanningItem[] = [
   // Lett. b — consigli di classe
   { date: '2026-11-09', kind: 'cdc', title: 'Consigli di classe 1–4 MAN', min: 240, fascia: '15:00–19:00' },
   { date: '2026-11-13', kind: 'cdc', title: 'Consiglio di classe 4IAN', min: 60, fascia: '14:00–17:00' },
-  { date: '2026-11-17', kind: 'cdc', title: 'Consiglio di classe 2LSA', min: 60, fascia: '14:00–19:00' },
-  { date: '2027-03-09', kind: 'cdc', title: 'Consiglio di classe 2LSA', min: 60, fascia: '14:00–18:00' },
   { date: '2027-03-11', kind: 'cdc', title: 'Consigli di classe 1–4 MAN', min: 240, fascia: '14:00–18:00' },
   { date: '2027-03-17', kind: 'cdc', title: 'Consiglio di classe 4IAN', min: 60, fascia: '15:00–17:00' },
   { date: '2027-05-03', kind: 'cdc', title: 'Consiglio di classe 4IAN', min: 60, fascia: '15:00–17:30' },
   { date: '2027-05-07', kind: 'cdc', title: 'Consigli di classe 1–4 MAN', min: 300, fascia: '14:00–19:00' },
-  { date: '2027-05-12', kind: 'cdc', title: 'Consiglio di classe 2LSA', min: 75, fascia: '15:00–20:00' },
 ]
