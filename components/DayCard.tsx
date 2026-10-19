@@ -5,6 +5,7 @@ import { cn } from '@/components/utils'
 import { LessonRow, BreakRow } from '@/components/LessonRow'
 import { MeetingRow } from '@/components/MeetingRow'
 import { slotState, type RomeNow } from '@/components/now'
+import { splitSorveglianza } from '@/components/tokens'
 import { scansione, timeToMin } from '@/lib/schedule'
 
 function cap(s: string): string {
@@ -20,6 +21,7 @@ export function DayCard({ day, now }: { day: RenderedDay; now?: RomeNow }) {
   const isPast = !!now && day.date < now.date
   const breaks = scansione(day.date).breaks
   const empty = !day.isHoliday && day.slots.length === 0 && day.meetings.length === 0
+  const { duty, others } = splitSorveglianza(day.meetings, day.slots.some(s => breaks[s.hour]))
 
   const nextHour = isToday
     ? day.slots.find(s => slotState(s.hour, day.date, now) === 'future')?.hour
@@ -69,16 +71,16 @@ export function DayCard({ day, now }: { day: RenderedDay; now?: RomeNow }) {
             {day.slots.map((s, idx) => (
               <div key={`${s.hour}-${s.class?.id ?? 'x'}`}>
                 <LessonRow slot={s} date={day.date} state={slotState(s.hour, day.date, now, nextHour)} />
-                {breaks[s.hour] && idx < day.slots.length - 1 && <BreakRow label={breaks[s.hour]} />}
+                {breaks[s.hour] && (idx < day.slots.length - 1 || duty) && <BreakRow label={breaks[s.hour]} duty={duty} />}
               </div>
             ))}
           </div>
         )}
 
-        {day.meetings.length > 0 && (
+        {others.length > 0 && (
           <div className={cn(day.slots.length > 0 && 'mt-1 border-t border-line pt-1')}>
             <p className="px-2 pt-1 pb-0.5 text-caption text-muted">Pomeriggio</p>
-            {day.meetings.map(m => (
+            {others.map(m => (
               <MeetingRow key={m.id} m={m} past={isMeetingPast(m)} />
             ))}
           </div>

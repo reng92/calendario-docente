@@ -9,7 +9,7 @@ import { scansione, timeToMin } from '@/lib/schedule'
 import { LessonRow, BreakRow, ClassChip } from '@/components/LessonRow'
 import { MeetingRow } from '@/components/MeetingRow'
 import { getRomeNow, slotState, breakAfter, formatMinutes, type RomeNow } from '@/components/now'
-import { isDisposizione } from '@/components/tokens'
+import { isDisposizione, isSorveglianza, splitSorveglianza } from '@/components/tokens'
 import { cn } from '@/components/utils'
 
 type Props = {
@@ -92,7 +92,7 @@ function Hero({ state, day }: { state: NowState; day: RenderedDay | null }) {
     )
   }
   if (state.kind === 'after') {
-    const nextMeeting = day?.meetings.find(m => m.startTime) ?? null
+    const nextMeeting = day?.meetings.find(m => m.startTime && !isSorveglianza(m.kind)) ?? null
     return (
       <section className={cn(base, 'border-line bg-surface')}>
         <p className="text-caption text-ok">Lezioni finite</p>
@@ -168,10 +168,26 @@ export function TodayView({ today, nextDay, initialNow }: Props) {
     const end = m.endTime ?? m.startTime
     return end ? now.minutes >= timeToMin(end) : false
   }
+  const { duty, others } = splitSorveglianza(today?.meetings ?? [], slots.some(s => breaks[s.hour]))
+  // Promemoria del turno finché non è finito, anche durante le lezioni della mattina
+  const dutyUpcoming = duty && !today?.isHoliday && !isMeetingPast(duty) ? duty : null
 
   return (
     <div className="space-y-4 p-4">
       <Hero state={state} day={today} />
+
+      {dutyUpcoming && (
+        <section
+          className="rounded-card border border-line bg-surface px-4 py-3"
+          style={{ boxShadow: 'inset 4px 0 0 var(--ev-sorveglianza)' }}
+        >
+          <p className="text-caption font-semibold tabular" style={{ color: 'var(--ev-sorveglianza)' }}>
+            Sorveglianza · {dutyUpcoming.startTime?.slice(0, 5)}–{dutyUpcoming.endTime?.slice(0, 5)}
+          </p>
+          <p className="mt-0.5 text-title text-ink">{dutyUpcoming.title}</p>
+          {dutyUpcoming.notes && <p className="mt-0.5 text-small text-muted">{dutyUpcoming.notes}</p>}
+        </section>
+      )}
 
       {today && !today.isHoliday && (slots.length > 0 || today.meetings.length > 0) && (
         <section className="rounded-card border border-line bg-surface px-2 py-2">
@@ -181,15 +197,15 @@ export function TodayView({ today, nextDay, initialNow }: Props) {
               {slots.map((s, idx) => (
                 <div key={`${s.hour}-${s.class?.id ?? 'x'}`}>
                   <LessonRow slot={s} date={today.date} state={slotState(s.hour, today.date, now, nextHour)} />
-                  {breaks[s.hour] && idx < slots.length - 1 && <BreakRow label={breaks[s.hour]} />}
+                  {breaks[s.hour] && (idx < slots.length - 1 || duty) && <BreakRow label={breaks[s.hour]} duty={duty} />}
                 </div>
               ))}
             </>
           )}
-          {today.meetings.length > 0 && (
+          {others.length > 0 && (
             <div className={cn(slots.length > 0 && 'mt-1 border-t border-line pt-1')}>
               <p className="px-2 pt-1 pb-1 text-caption text-muted">Pomeriggio</p>
-              {today.meetings.map(m => <MeetingRow key={m.id} m={m} past={isMeetingPast(m)} />)}
+              {others.map(m =><MeetingRow key={m.id} m={m} past={isMeetingPast(m)} />)}
             </div>
           )}
         </section>

@@ -10,6 +10,22 @@ export const EVENT_KINDS: Record<string, { label: string; short: string; color: 
   dipartimento: { label: 'Dipartimento',         short: 'Dipartimento', color: 'var(--ev-dipartimento)' },
   colloqui:     { label: 'Colloqui',             short: 'Colloqui',     color: 'var(--ev-colloqui)' },
   scrutini:     { label: 'Scrutini',             short: 'Scrutini',     color: 'var(--ev-scrutini)' },
+  sorveglianza: { label: 'Sorveglianza',         short: 'Sorveglianza', color: 'var(--ev-sorveglianza)' },
+}
+
+/** Turno di sorveglianza in ricreazione: va mostrato sulla riga dell'intervallo, non nel pomeriggio */
+export function isSorveglianza(kind: string): boolean {
+  return kind === 'sorveglianza'
+}
+
+/**
+ * Separa il turno di sorveglianza dagli altri impegni del giorno. Se nessuna
+ * lezione del giorno è seguita da un intervallo (`hasBreak` falso) il turno
+ * resta tra gli impegni, così non sparisce.
+ */
+export function splitSorveglianza<M extends { kind: string }>(meetings: M[], hasBreak: boolean): { duty: M | null; others: M[] } {
+  const duty = hasBreak ? meetings.find(m => isSorveglianza(m.kind)) ?? null : null
+  return { duty, others: duty ? meetings.filter(m => m !== duty) : meetings }
 }
 
 export const EVENT_KIND_OPTIONS = Object.entries(EVENT_KINDS).map(([value, k]) => ({ value, label: k.label }))
