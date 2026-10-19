@@ -14,6 +14,7 @@ import { sql } from 'drizzle-orm'
  *   - 28 set – 4 ott 2026: orario a 5 ore al giorno (scansione in lib/schedule.ts)
  *   - dal 5 ott 2026: orario a 6 ore (uscita 13:40); compare 2LSA e le ore "D"
  *     su una classe (1MAN, 2LSA, 3MAN) oltre a quelle "Propria classe"
+ *   - dal 19 ott 2026: sparisce la 2LSA, 2MAN (FIS) in compresenza con Micciché
  *
  * Quando arriva un nuovo orario: chiudere gli slot correnti con valid_to,
  * aggiungere i nuovi con valid_from e rilanciare `pnpm db:seed`.
@@ -30,6 +31,8 @@ const ORARIO_21_TO = '2026-09-27'
 const ORARIO_28_FROM = '2026-09-28'
 const ORARIO_28_TO = '2026-10-04'
 const ORARIO_5OTT_FROM = '2026-10-05'
+const ORARIO_5OTT_TO = '2026-10-18'
+const ORARIO_19OTT_FROM = '2026-10-19'
 
 type SlotRow = [wd: number, hour: number, code: string, subject?: string, room?: string]
 type CotRow = [wd: number, hour: number, code: string, name: string]
@@ -157,6 +160,34 @@ async function seed() {
     [4, 6, '3MAN', 'D',    'II.26'],
   ]
 
+  console.log('📅 Orario dal 19 ottobre...')
+  const orario19ott: SlotRow[] = [
+    // Lunedì
+    [0, 2, '3MAN', 'TTIM', 'II.26'],
+    [0, 3, '4MAN', 'TTRI', LAB],
+    [0, 4, 'D'],
+    [0, 5, '3MAN', 'TTRI', 'II.26'],
+    [0, 6, 'D'],
+    // Martedì
+    [1, 1, '4MAN', 'TTRI', LAB],
+    [1, 2, '4MAN', 'TTRI', LAB],
+    // Mercoledì
+    [2, 1, '3MAN', 'TTIM', LAB],
+    [2, 2, '3MAN', 'TTIM', LAB],
+    [2, 3, '3MAN', 'TEEA', LAB],
+    [2, 4, '3MAN', 'TEEA', LAB],
+    [2, 6, 'D'],
+    // Giovedì
+    [3, 2, '2MAN', 'FIS',  'T.15'],
+    [3, 3, 'D'],
+    // Venerdì
+    [4, 2, 'D'],
+    [4, 3, '1MAN', 'D',    'II.23'],
+    [4, 4, '4IAN', 'TGPP', 'II.24'],
+    [4, 5, '3MAN', 'TEEA', 'II.26'],
+    [4, 6, '3MAN', 'D',    'II.26'],
+  ]
+
   const toRow = (validFrom: string, validTo: string | null) =>
     ([wd, h, code, subject, room]: SlotRow) => ({
       weekday: wd, hour: h, classId: byCode[code],
@@ -167,7 +198,8 @@ async function seed() {
     ...provvisorio.map(toRow(PROVVISORIO_FROM, PROVVISORIO_TO)),
     ...orario21.map(toRow(ORARIO_21_FROM, ORARIO_21_TO)),
     ...orario28.map(toRow(ORARIO_28_FROM, ORARIO_28_TO)),
-    ...orario5ott.map(toRow(ORARIO_5OTT_FROM, null)),
+    ...orario5ott.map(toRow(ORARIO_5OTT_FROM, ORARIO_5OTT_TO)),
+    ...orario19ott.map(toRow(ORARIO_19OTT_FROM, null)),
   ])
 
   console.log('👥 Compresenze...')
@@ -208,6 +240,19 @@ async function seed() {
     [4, 5, '3MAN', 'Lavoro'],
     // 2MAN (FIS), 4IAN (TGPP) e ore "D": nessun co-docente
   ]
+  const cot19ott: CotRow[] = [
+    // Lunedì
+    [0, 2, '3MAN', 'Valente'], [0, 3, '4MAN', 'Lavoro'], [0, 5, '3MAN', 'Lavoro'],
+    // Martedì
+    [1, 1, '4MAN', 'Lavoro'], [1, 2, '4MAN', 'Lavoro'],
+    // Mercoledì
+    [2, 1, '3MAN', 'Valente'], [2, 2, '3MAN', 'Valente'], [2, 3, '3MAN', 'Lavoro'], [2, 4, '3MAN', 'Lavoro'],
+    // Giovedì
+    [3, 2, '2MAN', 'Micciché'],
+    // Venerdì
+    [4, 5, '3MAN', 'Lavoro'],
+    // 4IAN (TGPP) e ore "D": nessun co-docente
+  ]
   const toCot = (validFrom: string, validTo: string | null) =>
     ([wd, h, code, name]: CotRow) => ({
       classId: byCode[code], weekday: wd, hour: h, teacherName: name, role: 'altro',
@@ -216,7 +261,8 @@ async function seed() {
   await db.insert(coteachers).values([
     ...cot21.map(toCot(ORARIO_21_FROM, ORARIO_21_TO)),
     ...cot28.map(toCot(ORARIO_28_FROM, ORARIO_28_TO)),
-    ...cot5ott.map(toCot(ORARIO_5OTT_FROM, null)),
+    ...cot5ott.map(toCot(ORARIO_5OTT_FROM, ORARIO_5OTT_TO)),
+    ...cot19ott.map(toCot(ORARIO_19OTT_FROM, null)),
   ])
 
   console.log('🚫 Festività e sospensioni (calendario scolastico 2026/27 — sedi di Roma)...')
