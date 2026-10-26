@@ -27,6 +27,7 @@ export function PushSubscribeButton() {
   const [state, setState] = useState<PushState>('loading')
   const [busy, setBusy] = useState(false)
   const [iosHint, setIosHint] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -46,6 +47,7 @@ export function PushSubscribeButton() {
 
   async function subscribe() {
     setBusy(true)
+    setError('')
     try {
       const permission = await Notification.requestPermission()
       if (permission !== 'granted') { setState('denied'); return }
@@ -56,7 +58,7 @@ export function PushSubscribeButton() {
         applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
       })
 
-      await fetch('/api/push/subscribe', {
+      const res = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -68,9 +70,15 @@ export function PushSubscribeButton() {
           deviceLabel: navigator.userAgent.slice(0, 50),
         }),
       })
+      if (!res.ok) {
+        // il server non ha salvato la sottoscrizione: senza riga in DB non arriverebbe nulla
+        await sub.unsubscribe()
+        throw new Error(`subscribe ${res.status}`)
+      }
       setState('subscribed')
     } catch (e) {
       console.error(e)
+      setError('Attivazione non riuscita. Controlla la connessione e riprova.')
     } finally {
       setBusy(false)
     }
@@ -78,6 +86,7 @@ export function PushSubscribeButton() {
 
   async function unsubscribe() {
     setBusy(true)
+    setError('')
     try {
       const reg = await navigator.serviceWorker.ready
       const sub = await reg.pushManager.getSubscription()
@@ -90,6 +99,9 @@ export function PushSubscribeButton() {
         await sub.unsubscribe()
       }
       setState('unsubscribed')
+    } catch (e) {
+      console.error(e)
+      setError('Disattivazione non riuscita. Riprova tra poco.')
     } finally {
       setBusy(false)
     }
@@ -136,6 +148,9 @@ export function PushSubscribeButton() {
           >
             {busy ? 'Un momento…' : state === 'subscribed' ? 'Disattiva su questo dispositivo' : 'Attiva le notifiche'}
           </button>
+        )}
+        {error && (
+          <p role="alert" className="mt-2 rounded-control bg-danger-soft px-3 py-2 text-small text-danger">{error}</p>
         )}
       </div>
     </div>
