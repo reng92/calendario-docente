@@ -40,21 +40,25 @@ export function durataMin(startTime: string | null, endTime: string | null): num
   return Math.max(0, toMin(endTime) - toMin(startTime))
 }
 
-export type Monte = { svolti: number; programmati: number; senzaOrario: number }
+export type Monte = { svolti: number; programmati: number; senzaOrario: number; assenze: number }
+
+/** attended = false: impegno a cui non si è partecipato, fuori dal conteggio. null = presenza presunta */
+type Presenza = { attended?: boolean | null }
 
 /** Minuti svolti (impegno terminato) e programmati per comma, nell'anno scolastico di `now.date` */
 export function monteOre(
-  rows: Array<{ date: string; startTime: string | null; endTime: string | null; kind: string }>,
+  rows: Array<{ date: string; startTime: string | null; endTime: string | null; kind: string } & Presenza>,
   now: { date: string; minutes: number },
 ): Record<Comma, Monte> {
   const as = annoScolastico(now.date)
   const out: Record<Comma, Monte> = {
-    a: { svolti: 0, programmati: 0, senzaOrario: 0 },
-    b: { svolti: 0, programmati: 0, senzaOrario: 0 },
+    a: { svolti: 0, programmati: 0, senzaOrario: 0, assenze: 0 },
+    b: { svolti: 0, programmati: 0, senzaOrario: 0, assenze: 0 },
   }
   for (const r of rows) {
     const c = commaOf(r.kind)
     if (!c || r.date < as.from || r.date > as.to) continue
+    if (r.attended === false) { out[c].assenze++; continue }
     const min = durataMin(r.startTime, r.endTime)
     if (min === 0) { out[c].senzaOrario++; continue }
     const done = r.date < now.date || (r.date === now.date && toMin(r.endTime!) <= now.minutes)
@@ -83,7 +87,7 @@ export type Previsione = {
  * non ancora registrate (stesso giorno e comma = già registrata).
  */
 export function previsione(
-  rows: Array<{ date: string; startTime: string | null; endTime: string | null; kind: string; title: string }>,
+  rows: Array<{ date: string; startTime: string | null; endTime: string | null; kind: string; title: string } & Presenza>,
   planning: Array<{ date: string; kind: string; title: string; min: number }>,
   now: { date: string; minutes: number },
 ): Record<Comma, Previsione> {
@@ -95,7 +99,9 @@ export function previsione(
   for (const r of rows) {
     const c = commaOf(r.kind)
     if (!c || r.date < as.from || r.date > as.to) continue
+    // anche se assente l'impegno è registrato: il planning non deve rimetterlo come stima
     registrati.add(`${r.date}:${c}`)
+    if (r.attended === false) continue
     const min = durataMin(r.startTime, r.endTime)
     const done = r.date < now.date || (r.date === now.date && toMin(r.endTime ?? '00:00') <= now.minutes)
     if (min > 0 && !done) future[c].push({ date: r.date, title: r.title, min, stima: false })

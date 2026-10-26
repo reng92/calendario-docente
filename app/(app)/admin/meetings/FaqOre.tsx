@@ -50,7 +50,7 @@ const FAQ: Array<{ q: string; a: React.ReactNode }> = [
     a: (
       <>
         <p><span className="text-ink">Collegio, Dipartimento e Colloqui</span> vanno nella lett. a, <span className="text-ink">Consiglio di classe</span> nella lett. b. Gli <span className="text-ink">Scrutini</span> non si contano.</p>
-        <p className="mt-2">Un impegno risulta svolto quando ne è passato l’orario di fine. Se è durato più o meno del previsto, correggi l’orario con la matita. Registra come Colloqui solo gli incontri collettivi con le famiglie, non il ricevimento individuale.</p>
+        <p className="mt-2">Un impegno risulta svolto quando ne è passato l’orario di fine. Se è durato più o meno del previsto, correggi l’orario con la matita. Se non hai partecipato, spegni l’interruttore Presente: l’impegno resta in calendario ma non conta nelle ore. Registra come Colloqui solo gli incontri collettivi con le famiglie, non il ricevimento individuale.</p>
         <p className="mt-2">In caso di part-time o di servizio su più scuole, gli obblighi si riproporzionano: verifica con la segreteria.</p>
       </>
     ),

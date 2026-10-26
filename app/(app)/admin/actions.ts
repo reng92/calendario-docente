@@ -39,6 +39,12 @@ export async function updateMeeting(id: string, data: {
   revalidatePath('/admin/meetings')
 }
 
+/** Presenza a un impegno: false lo toglie dal conteggio delle 40+40 ore */
+export async function setMeetingAttended(id: string, attended: boolean) {
+  await db.update(meetings).set({ attended }).where(eq(meetings.id, id))
+  revalidatePath('/admin/meetings')
+}
+
 export async function deleteMeeting(id: string) {
   await db.delete(meetings).where(eq(meetings.id, id))
   revalidatePath('/')

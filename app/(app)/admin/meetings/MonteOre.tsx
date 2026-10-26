@@ -41,12 +41,13 @@ export function MonteOre({ data, anno }: { data: Record<Comma, Monte>; anno: str
                 {` · restano ${formatOre(Math.max(0, limit - tot))}`}
                 {over && ` · oltre il limite di ${formatOre(tot - limit)}`}
                 {m.senzaOrario > 0 && ` · ${m.senzaOrario} senza orario, non contati`}
+                {m.assenze > 0 && ` · ${m.assenze} ${m.assenze === 1 ? 'assenza esclusa' : 'assenze escluse'}`}
               </p>
             </div>
           )
         })}
       </div>
-      <p className="px-1 pt-2 text-small text-muted">Tocca la matita su un impegno per correggere l’orario effettivo.</p>
+      <p className="px-1 pt-2 text-small text-muted">Se non hai partecipato a un impegno, segnalo come assente: esce dal conteggio. Con la matita correggi l’orario effettivo.</p>
     </section>
   )
 }
