@@ -1,6 +1,7 @@
 import { db } from '@/db'
 import { circolariSeen, sources } from '@/db/schema'
-import { desc } from 'drizzle-orm'
+import { desc, sql } from 'drizzle-orm'
+import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
@@ -14,9 +15,17 @@ function hostOf(url: string): string {
   try { return new URL(url).hostname.replace(/^www\./, '') } catch { return '' }
 }
 
-export default async function CircolariPage() {
+/** Voci mostrate per fonte: centinaia di righe nel DOM appesantiscono il telefono */
+const PAGE = 30
+/** Una circolare è "nuova" se pubblicata negli ultimi 3 giorni */
+const NEW_MS = 3 * 24 * 60 * 60 * 1000
+
+export default async function CircolariPage({ searchParams }: { searchParams: Promise<{ tutte?: string; fonte?: string }> }) {
+  const sp = await searchParams
+  const showAll = sp.tutte === '1'
   const [rows, sourceRows] = await Promise.all([
-    db.select().from(circolariSeen).orderBy(desc(circolariSeen.createdAt)),
+    // per data di pubblicazione (quella mostrata), non di scoperta: alla prima sync tutte hanno lo stesso createdAt
+    db.select().from(circolariSeen).orderBy(desc(sql`coalesce(${circolariSeen.pubblicataIl}, ${circolariSeen.createdAt})`), desc(circolariSeen.id)),
     db.select().from(sources),
   ])
 
@@ -44,7 +53,7 @@ export default async function CircolariPage() {
             </p>
           </div>
         ) : (
-          <Tabs defaultValue={keys[0]}>
+          <Tabs defaultValue={sp.fonte && keys.includes(sp.fonte) ? sp.fonte : keys[0]}>
             <TabsList className="mb-3 w-full rounded-control p-1">
               {keys.map(k => (
                 <TabsTrigger key={k} value={k} className="h-full rounded-[8px] text-small">
@@ -58,8 +67,9 @@ export default async function CircolariPage() {
             {keys.map(k => (
               <TabsContent key={k} value={k}>
                 <ul className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface">
-                  {grouped.get(k)!.map(item => {
+                  {grouped.get(k)!.slice(0, showAll ? undefined : PAGE).map(item => {
                     const when = item.pubblicataIl ?? item.createdAt
+                    const isNew = !!when && Date.now() - new Date(when).getTime() < NEW_MS
                     return (
                       <li key={item.id}>
                         <a
@@ -69,7 +79,12 @@ export default async function CircolariPage() {
                           className="flex min-h-14 items-start gap-3 px-4 py-3 hover:bg-surface-2"
                         >
                           <div className="min-w-0 flex-1">
-                            <p className="text-body font-semibold leading-snug text-ink">{item.titolo}</p>
+                            <p className="text-body font-semibold leading-snug text-ink">
+                              {isNew && (
+                                <span className="mr-1.5 inline-block rounded-chip bg-accent-soft px-1.5 align-[2px] text-caption text-accent">Nuova</span>
+                              )}
+                              {item.titolo}
+                            </p>
                             <p className="mt-0.5 text-small text-muted">
                               {when && <span className="tabular">{format(new Date(when), 'd MMMM yyyy', { locale: it })}</span>}
                               {item.url && <span> · {hostOf(item.url)}</span>}
@@ -81,6 +96,11 @@ export default async function CircolariPage() {
                     )
                   })}
                 </ul>
+                {!showAll && grouped.get(k)!.length > PAGE && (
+                  <Link href={`/circolari?tutte=1&fonte=${k}`} className="mt-2 flex min-h-11 items-center justify-center text-small font-semibold text-accent">
+                    Mostra tutte le {grouped.get(k)!.length}
+                  </Link>
+                )}
               </TabsContent>
             ))}
           </Tabs>
