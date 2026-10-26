@@ -22,12 +22,14 @@ type Props = {
   triggerVariant?: 'primary' | 'text'
   /** Contenuto custom del bottone (es. un'icona); sostituisce icona + e etichetta */
   triggerContent?: ReactNode
+  /** Apre il foglio al montaggio (es. arrivando da un link con dati precompilati) */
+  defaultOpen?: boolean
   children: ReactNode
 }
 
 /** Bottone che apre un foglio dal basso con un form dentro */
-export function FormSheet({ title, description, triggerLabel, triggerClassName, triggerVariant = 'primary', triggerContent, children }: Props) {
-  const [open, setOpen] = useState(false)
+export function FormSheet({ title, description, triggerLabel, triggerClassName, triggerVariant = 'primary', triggerContent, defaultOpen = false, children }: Props) {
+  const [open, setOpen] = useState(defaultOpen)
   const close = () => setOpen(false)
   return (
     <Sheet open={open} onOpenChange={setOpen}>

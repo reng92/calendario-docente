@@ -1,3 +1,4 @@
+import { capFirst } from '@/components/utils'
 import { db } from '@/db'
 import { classes, dayOverrides } from '@/db/schema'
 import { desc } from 'drizzle-orm'
@@ -13,7 +14,12 @@ import { deleteOverride } from '../actions'
 
 export const dynamic = 'force-dynamic'
 
-export default async function OverridesPage() {
+export default async function OverridesPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  // Dal dettaglio lezione: ?date=…&hour=…&class=… apre il foglio già compilato
+  const sp = await searchParams
+  const prefill = sp.date && /^\d{4}-\d{2}-\d{2}$/.test(sp.date)
+    ? { date: sp.date, hour: sp.hour ? Number(sp.hour) || undefined : undefined, classId: sp.class }
+    : undefined
   const [rows, classesData] = await Promise.all([
     db.select().from(dayOverrides).orderBy(desc(dayOverrides.date), desc(dayOverrides.hour)),
     db.select().from(classes).orderBy(classes.code),
@@ -27,8 +33,8 @@ export default async function OverridesPage() {
         title="Modifiche giornaliere"
         back="/altro"
         action={
-          <FormSheet title="Nuova modifica" description="Supplenza, assemblea, sciopero o altra variazione per un giorno." triggerLabel="Aggiungi">
-            <OverrideForm classes={options} />
+          <FormSheet title="Nuova modifica" description="Supplenza, assemblea, sciopero o altra variazione per un giorno." triggerLabel="Aggiungi" defaultOpen={!!prefill}>
+            <OverrideForm classes={options} initial={prefill} />
           </FormSheet>
         }
       />
@@ -46,7 +52,7 @@ export default async function OverridesPage() {
                 <li key={r.id} className="flex items-center gap-3 px-4 py-2">
                   <div className="min-w-0 flex-1 py-1">
                     <p className="text-small text-muted">
-                      <span className="capitalize">{format(parseISO(r.date), 'EEE d MMM yyyy', { locale: it })}</span>
+                      <span>{capFirst(format(parseISO(r.date), 'EEE d MMM yyyy', { locale: it }))}</span>
                       {r.hour != null && <span> · {r.hour}ª ora</span>}
                     </p>
                     <p className="flex items-center gap-2 text-body font-semibold text-ink">

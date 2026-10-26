@@ -9,6 +9,7 @@ import { scansione } from '@/lib/schedule'
 import { Sheet, SheetContent, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet'
 import { isDisposizione, overrideLabel } from '@/components/tokens'
 import { ClassChip } from '@/components/LessonRow'
+import { capFirst } from '@/components/utils'
 
 type Props = {
   open: boolean
@@ -35,7 +36,7 @@ export function LessonSheet({ open, onOpenChange, slot, date }: Props) {
   const nominal = `${scan.start[slot.hour]?.replace(/^0/, '')}–${scan.end[slot.hour]?.replace(/^0/, '')}`
   const effective = scan.effectiveStart[slot.hour]
   const startsLate = effective && effective !== scan.start[slot.hour]
-  const dayLabel = format(parseISO(date), 'EEEE d MMMM', { locale: it })
+  const dayLabel = capFirst(format(parseISO(date), 'EEEE d MMMM', { locale: it }))
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -47,7 +48,7 @@ export function LessonSheet({ open, onOpenChange, slot, date }: Props) {
         <div className="mx-auto mb-1 h-1 w-10 rounded-full bg-line" aria-hidden />
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <SheetDescription className="text-small capitalize text-muted">
+            <SheetDescription className="text-small text-muted">
               {dayLabel} · {slot.hour}ª ora
             </SheetDescription>
             <SheetTitle className="mt-1 flex items-center gap-2 text-title text-ink">
@@ -74,18 +75,17 @@ export function LessonSheet({ open, onOpenChange, slot, date }: Props) {
           <Row label="Orario" value={<span className="tabular">{nominal}</span>} />
           {startsLate && <Row label="Inizio effettivo" value={<span className="tabular">{effective.replace(/^0/, '')}</span>} />}
           {!disp && <Row label="Aula" value={slot.room} />}
-          {!disp && <Row label="Classe" value={code} />}
           {slot.coteachers.length > 0 && (
             <Row label="In compresenza con" value={slot.coteachers.map(c => c.name).join(', ')} />
           )}
         </dl>
 
         <Link
-          href="/admin/overrides"
+          href={`/admin/overrides?date=${date}&hour=${slot.hour}${slot.class && !disp ? `&class=${slot.class.id}` : ''}`}
           onClick={() => onOpenChange(false)}
           className="mt-4 flex min-h-11 items-center justify-center rounded-control border border-line text-small font-semibold text-ink hover:bg-surface-2"
         >
-          Registra una variazione per questo giorno
+          Registra una variazione per quest’ora
         </Link>
       </SheetContent>
     </Sheet>

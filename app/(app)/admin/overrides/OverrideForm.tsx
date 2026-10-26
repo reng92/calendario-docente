@@ -9,7 +9,9 @@ import { useFormSheetClose } from '@/components/FormSheet'
 
 type ClassOption = { id: string; code: string }
 
-export function OverrideForm({ classes }: { classes: ClassOption[] }) {
+export type OverrideInitial = { date?: string; hour?: number; classId?: string }
+
+export function OverrideForm({ classes, initial }: { classes: ClassOption[]; initial?: OverrideInitial }) {
   const [pending, setPending] = useState(false)
   const onDone = useFormSheetClose()
   const [kind, setKind] = useState('')
@@ -26,7 +28,9 @@ export function OverrideForm({ classes }: { classes: ClassOption[] }) {
         classId: (formData.get('classId') as string) || undefined,
         note: (formData.get('note') as string) || undefined,
       })
-      router.refresh()
+      // togli i parametri di precompilazione, altrimenti un reload riapre il foglio
+      if (initial) router.replace('/admin/overrides')
+      else router.refresh()
       onDone()
     } finally {
       setPending(false)
@@ -37,10 +41,10 @@ export function OverrideForm({ classes }: { classes: ClassOption[] }) {
     <form action={onSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <Field label="Data" htmlFor="o-date">
-          <input id="o-date" name="date" type="date" required className={inputCls} />
+          <input id="o-date" name="date" type="date" required defaultValue={initial?.date ?? ''} className={inputCls} />
         </Field>
         <Field label="Ora" htmlFor="o-hour" hint="1–5; vuoto = tutto il giorno">
-          <input id="o-hour" name="hour" type="number" inputMode="numeric" min={1} max={5} placeholder="—" className={inputCls} />
+          <input id="o-hour" name="hour" type="number" inputMode="numeric" min={1} max={5} placeholder="—" defaultValue={initial?.hour ?? ''} className={inputCls} />
         </Field>
       </div>
       <Field label="Tipo" htmlFor="o-kind">
@@ -50,7 +54,7 @@ export function OverrideForm({ classes }: { classes: ClassOption[] }) {
         </select>
       </Field>
       <Field label="Classe" htmlFor="o-class" hint={kind === 'cover' ? 'Obbligatoria per una supplenza.' : 'Facoltativa: limita la modifica a una sola classe.'}>
-        <select id="o-class" name="classId" required={kind === 'cover'} defaultValue="" className={selectCls}>
+        <select id="o-class" name="classId" required={kind === 'cover'} defaultValue={initial?.classId ?? ''} className={selectCls}>
           <option value="">Tutte</option>
           {classes.map(c => <option key={c.id} value={c.id}>{c.code}</option>)}
         </select>
