@@ -14,7 +14,9 @@ import { sql } from 'drizzle-orm'
  *   - 28 set – 4 ott 2026: orario a 5 ore al giorno (scansione in lib/schedule.ts)
  *   - dal 5 ott 2026: orario a 6 ore (uscita 13:40); compare 2LSA e le ore "D"
  *     su una classe (1MAN, 2LSA, 3MAN) oltre a quelle "Propria classe"
- *   - dal 19 ott 2026: sparisce la 2LSA, 2MAN (FIS) in compresenza con Micciché
+ *   - 19–25 ott 2026: sparisce la 2LSA, 2MAN (FIS) in compresenza con Micciché
+ *   - dal 26 ott 2026: 7ª ora (13:40–14:30), lezioni nei laboratori, 4IAN
+ *     (TGPP) in compresenza con Marinelli
  *
  * Quando arriva un nuovo orario: chiudere gli slot correnti con valid_to,
  * aggiungere i nuovi con valid_from e rilanciare `pnpm db:seed`.
@@ -33,6 +35,8 @@ const ORARIO_28_TO = '2026-10-04'
 const ORARIO_5OTT_FROM = '2026-10-05'
 const ORARIO_5OTT_TO = '2026-10-18'
 const ORARIO_19OTT_FROM = '2026-10-19'
+const ORARIO_19OTT_TO = '2026-10-25'
+const ORARIO_26OTT_FROM = '2026-10-26'
 
 type SlotRow = [wd: number, hour: number, code: string, subject?: string, room?: string]
 type CotRow = [wd: number, hour: number, code: string, name: string]
@@ -188,7 +192,36 @@ async function seed() {
     [4, 6, '3MAN', 'D',    'II.26'],
   ]
 
-  const toRow = (validFrom: string, validTo: string | null) =>
+  console.log('📅 Orario dal 26 ottobre...')
+  const orario26ott: SlotRow[] = [
+    // Lunedì
+    [0, 2, '3MAN', 'TTIM', 'T.37A-LabElImp'],
+    [0, 3, '3MAN', 'TTIM', 'T.37A-LabElImp'],
+    [0, 4, '1MAN', 'TTRG', 'S.00-Lab-CV'],
+    [0, 5, '3MAN', 'TEEA', 'T.28-Lab-El'],
+    [0, 6, 'D'],
+    // Martedì
+    [1, 4, 'D'],
+    [1, 5, '1MAN', 'TTRG', 'S.00-Lab-CV'],
+    [1, 6, '1MAN', 'TTRG', 'S.00-Lab-CV'],
+    // Mercoledì
+    [2, 4, '3MAN', 'TTIM', 'T.37B-LabEIPC'],
+    [2, 5, '3MAN', 'TTIM', 'T.37B-LabEIPC'],
+    [2, 6, '4MAN', 'TTRI', 'T.37B-LabEIPC'],
+    [2, 7, '4MAN', 'TTRI', 'T.37B-LabEIPC'],
+    // Giovedì
+    [3, 3, '3MAN', 'TEEA', 'T.28-Lab-El'],
+    [3, 4, '3MAN', 'TEEA', 'T.28-Lab-El'],
+    [3, 5, '2MAN', 'FIS',  'T.15'],
+    [3, 6, '2MAN', 'FIS',  'T.15'],
+    // Venerdì
+    [4, 3, '3MAN', 'TTRI', 'T.37B-LabEIPC'],
+    [4, 4, '3MAN', 'TTRI', 'T.37B-LabEIPC'],
+    [4, 5, '4IAN', 'TGPP', 'T.33-Lab-GrSt'],
+    [4, 6, '4IAN', 'TGPP', 'T.33-Lab-GrSt'],
+  ]
+
+  const toRow =(validFrom: string, validTo: string | null) =>
     ([wd, h, code, subject, room]: SlotRow) => ({
       weekday: wd, hour: h, classId: byCode[code],
       subject: subject ?? null, room: room ?? null,
@@ -199,7 +232,8 @@ async function seed() {
     ...orario21.map(toRow(ORARIO_21_FROM, ORARIO_21_TO)),
     ...orario28.map(toRow(ORARIO_28_FROM, ORARIO_28_TO)),
     ...orario5ott.map(toRow(ORARIO_5OTT_FROM, ORARIO_5OTT_TO)),
-    ...orario19ott.map(toRow(ORARIO_19OTT_FROM, null)),
+    ...orario19ott.map(toRow(ORARIO_19OTT_FROM, ORARIO_19OTT_TO)),
+    ...orario26ott.map(toRow(ORARIO_26OTT_FROM, null)),
   ])
 
   console.log('👥 Compresenze...')
@@ -253,6 +287,19 @@ async function seed() {
     [4, 5, '3MAN', 'Lavoro'],
     // 4IAN (TGPP) e ore "D": nessun co-docente
   ]
+  const cot26ott: CotRow[] = [
+    // Lunedì
+    [0, 2, '3MAN', 'Valente'], [0, 3, '3MAN', 'Valente'], [0, 4, '1MAN', 'Nencetti'], [0, 5, '3MAN', 'Lavoro'],
+    // Martedì
+    [1, 5, '1MAN', 'Nencetti'], [1, 6, '1MAN', 'Nencetti'],
+    // Mercoledì
+    [2, 4, '3MAN', 'Valente'], [2, 5, '3MAN', 'Valente'], [2, 6, '4MAN', 'Lavoro'], [2, 7, '4MAN', 'Lavoro'],
+    // Giovedì
+    [3, 3, '3MAN', 'Lavoro'], [3, 4, '3MAN', 'Lavoro'], [3, 5, '2MAN', 'Micciché'], [3, 6, '2MAN', 'Micciché'],
+    // Venerdì
+    [4, 3, '3MAN', 'Lavoro'], [4, 4, '3MAN', 'Lavoro'], [4, 5, '4IAN', 'Marinelli'], [4, 6, '4IAN', 'Marinelli'],
+    // ore "D": nessun co-docente
+  ]
   const toCot = (validFrom: string, validTo: string | null) =>
     ([wd, h, code, name]: CotRow) => ({
       classId: byCode[code], weekday: wd, hour: h, teacherName: name, role: 'altro',
@@ -262,7 +309,8 @@ async function seed() {
     ...cot21.map(toCot(ORARIO_21_FROM, ORARIO_21_TO)),
     ...cot28.map(toCot(ORARIO_28_FROM, ORARIO_28_TO)),
     ...cot5ott.map(toCot(ORARIO_5OTT_FROM, ORARIO_5OTT_TO)),
-    ...cot19ott.map(toCot(ORARIO_19OTT_FROM, null)),
+    ...cot19ott.map(toCot(ORARIO_19OTT_FROM, ORARIO_19OTT_TO)),
+    ...cot26ott.map(toCot(ORARIO_26OTT_FROM, null)),
   ])
 
   console.log('🚫 Festività e sospensioni (calendario scolastico 2026/27 — sedi di Roma)...')
