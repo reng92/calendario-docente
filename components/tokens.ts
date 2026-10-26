@@ -28,6 +28,22 @@ export function splitSorveglianza<M extends { kind: string }>(meetings: M[], has
   return { duty, others: duty ? meetings.filter(m => m !== duty) : meetings }
 }
 
+/**
+ * Dove mostrare gli intervalli tra le lezioni del giorno (`hours` ordinate):
+ * chiave = indice della lezione dopo cui cade l'intervallo, -1 = prima della
+ * prima lezione. In testa o in coda solo se c'è un turno da mostrare
+ * (`withDuty`), così il turno compare anche quando l'ora prima è libera.
+ */
+export function breakPositions(hours: number[], breaks: Record<number, string>, withDuty: boolean): Map<number, string> {
+  const pos = new Map<number, string>()
+  if (!hours.length) return pos
+  for (const [h, label] of Object.entries(breaks)) {
+    const i = hours.findLastIndex(x => x <= Number(h))
+    if (withDuty || (i >= 0 && i < hours.length - 1)) pos.set(i, label)
+  }
+  return pos
+}
+
 export const EVENT_KIND_OPTIONS = Object.entries(EVENT_KINDS).map(([value, k]) => ({ value, label: k.label }))
 
 export function eventColor(kind: string): string {

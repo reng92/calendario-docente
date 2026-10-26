@@ -9,7 +9,7 @@ import { scansione, timeToMin } from '@/lib/schedule'
 import { LessonRow, BreakRow, ClassChip } from '@/components/LessonRow'
 import { MeetingRow } from '@/components/MeetingRow'
 import { getRomeNow, slotState, breakAfter, formatMinutes, type RomeNow } from '@/components/now'
-import { isDisposizione, isSorveglianza, splitSorveglianza } from '@/components/tokens'
+import { breakPositions, isDisposizione, isSorveglianza, splitSorveglianza } from '@/components/tokens'
 import { cn } from '@/components/utils'
 
 type Props = {
@@ -168,7 +168,8 @@ export function TodayView({ today, nextDay, initialNow }: Props) {
     const end = m.endTime ?? m.startTime
     return end ? now.minutes >= timeToMin(end) : false
   }
-  const { duty, others } = splitSorveglianza(today?.meetings ?? [], slots.some(s => breaks[s.hour]))
+  const { duty, others } = splitSorveglianza(today?.meetings ?? [], slots.length > 0 && Object.keys(breaks).length > 0)
+  const breakAt = breakPositions(slots.map(s => s.hour), breaks, !!duty)
   // Promemoria del turno finché non è finito, anche durante le lezioni della mattina
   const dutyUpcoming = duty && !today?.isHoliday && !isMeetingPast(duty) ? duty : null
 
@@ -177,16 +178,11 @@ export function TodayView({ today, nextDay, initialNow }: Props) {
       <Hero state={state} day={today} />
 
       {dutyUpcoming && (
-        <section
-          className="rounded-card border border-line bg-surface px-4 py-3"
-          style={{ boxShadow: 'inset 4px 0 0 var(--ev-sorveglianza)' }}
-        >
-          <p className="text-caption font-semibold tabular" style={{ color: 'var(--ev-sorveglianza)' }}>
-            Sorveglianza · {dutyUpcoming.startTime?.slice(0, 5)}–{dutyUpcoming.endTime?.slice(0, 5)}
-          </p>
-          <p className="mt-0.5 text-title text-ink">{dutyUpcoming.title}</p>
-          {dutyUpcoming.notes && <p className="mt-0.5 text-small text-muted">{dutyUpcoming.notes}</p>}
-        </section>
+        <p className="-mt-2 truncate px-1 text-[11px] leading-tight text-muted" title={dutyUpcoming.notes ?? undefined}>
+          <span className="tabular">{dutyUpcoming.startTime?.slice(0, 5)}–{dutyUpcoming.endTime?.slice(0, 5)}</span>
+          {' '}<span className="font-semibold" style={{ color: 'var(--ev-sorveglianza)' }}>Sorveglianza</span>
+          {' '}{dutyUpcoming.title}
+        </p>
       )}
 
       {today && !today.isHoliday && (slots.length > 0 || today.meetings.length > 0) && (
@@ -194,10 +190,11 @@ export function TodayView({ today, nextDay, initialNow }: Props) {
           {slots.length > 0 && (
             <>
               <p className="px-2 pt-1 pb-1 text-caption text-muted">Mattina</p>
+              {breakAt.has(-1) && <BreakRow label={breakAt.get(-1)!} duty={duty} />}
               {slots.map((s, idx) => (
                 <div key={`${s.hour}-${s.class?.id ?? 'x'}`}>
                   <LessonRow slot={s} date={today.date} state={slotState(s.hour, today.date, now, nextHour)} />
-                  {breaks[s.hour] && (idx < slots.length - 1 || duty) && <BreakRow label={breaks[s.hour]} duty={duty} />}
+                  {breakAt.has(idx) && <BreakRow label={breakAt.get(idx)!} duty={duty} />}
                 </div>
               ))}
             </>
@@ -225,12 +222,7 @@ export function TodayView({ today, nextDay, initialNow }: Props) {
             {nextDay.isHoliday ? (
               <p className="px-2 py-2 text-small text-danger">{nextDay.holidayLabel}</p>
             ) : (
-              <>
-                {[...nextDay.slots].sort((a, b) => a.hour - b.hour).map(s => (
-                  <LessonRow key={`${s.hour}-${s.class?.id ?? 'x'}`} slot={s} date={nextDay.date} compact />
-                ))}
-                {nextDay.meetings.map(m => <MeetingRow key={m.id} m={m} compact />)}
-              </>
+              <NextDayRows day={nextDay} />
             )}
           </div>
           <Link href="/" className="mt-2 flex min-h-11 items-center justify-center text-small font-semibold text-accent">
@@ -239,6 +231,25 @@ export function TodayView({ today, nextDay, initialNow }: Props) {
         </section>
       )}
     </div>
+  )
+}
+
+function NextDayRows({ day }: { day: RenderedDay }) {
+  const slots = [...day.slots].sort((a, b) => a.hour - b.hour)
+  const breaks = scansione(day.date).breaks
+  const { duty, others } = splitSorveglianza(day.meetings, slots.length > 0 && Object.keys(breaks).length > 0)
+  const breakAt = breakPositions(slots.map(s => s.hour), breaks, !!duty)
+  return (
+    <>
+      {duty && breakAt.has(-1) && <BreakRow label={breakAt.get(-1)!} duty={duty} />}
+      {slots.map((s, idx) => (
+        <div key={`${s.hour}-${s.class?.id ?? 'x'}`}>
+          <LessonRow slot={s} date={day.date} compact />
+          {duty && breakAt.has(idx) && <BreakRow label={breakAt.get(idx)!} duty={duty} />}
+        </div>
+      ))}
+      {others.map(m => <MeetingRow key={m.id} m={m} compact />)}
+    </>
   )
 }
 

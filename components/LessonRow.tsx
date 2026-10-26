@@ -104,17 +104,13 @@ export function LessonRow({ slot, date, state = 'future', compact }: Props) {
 export function BreakRow({ label, duty }: { label: string; duty?: { title: string; notes: string | null } | null }) {
   if (duty) {
     return (
-      <div
-        className="mx-1 my-1 rounded-control bg-surface-2 px-2 py-1.5"
-        style={{ boxShadow: 'inset 3px 0 0 var(--ev-sorveglianza)' }}
-        aria-label={`Intervallo ${label}, sorveglianza: ${duty.title}`}
-      >
-        <div className="flex items-baseline gap-2 pl-1">
-          <span className="text-caption font-semibold" style={{ color: 'var(--ev-sorveglianza)' }}>Sorveglianza</span>
-          <span className="tabular text-caption text-muted">{label}</span>
+      <div className="flex items-center gap-3 px-2 py-0.5" aria-label={`Intervallo ${label}, sorveglianza: ${duty.title}`}>
+        <div className="w-11 shrink-0" />
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 text-[11px] leading-tight font-normal text-muted">
+          <span className="tabular shrink-0">{label}</span>
+          <span className="shrink-0 font-semibold" style={{ color: 'var(--ev-sorveglianza)' }}>Sorveglianza</span>
+          <span className="truncate" title={duty.notes ?? undefined}>{duty.title}</span>
         </div>
-        <div className="pl-1 text-body font-semibold text-ink">{duty.title}</div>
-        {duty.notes && <div className="pl-1 text-small text-muted">{duty.notes}</div>}
       </div>
     )
   }

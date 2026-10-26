@@ -5,7 +5,7 @@ import { cn } from '@/components/utils'
 import { LessonRow, BreakRow } from '@/components/LessonRow'
 import { MeetingRow } from '@/components/MeetingRow'
 import { slotState, type RomeNow } from '@/components/now'
-import { splitSorveglianza } from '@/components/tokens'
+import { breakPositions, splitSorveglianza } from '@/components/tokens'
 import { scansione, timeToMin } from '@/lib/schedule'
 
 function cap(s: string): string {
@@ -21,7 +21,8 @@ export function DayCard({ day, now }: { day: RenderedDay; now?: RomeNow }) {
   const isPast = !!now && day.date < now.date
   const breaks = scansione(day.date).breaks
   const empty = !day.isHoliday && day.slots.length === 0 && day.meetings.length === 0
-  const { duty, others } = splitSorveglianza(day.meetings, day.slots.some(s => breaks[s.hour]))
+  const { duty, others } = splitSorveglianza(day.meetings, day.slots.length > 0 && Object.keys(breaks).length > 0)
+  const breakAt = breakPositions(day.slots.map(s => s.hour), breaks, !!duty)
 
   const nextHour = isToday
     ? day.slots.find(s => slotState(s.hour, day.date, now) === 'future')?.hour
@@ -68,10 +69,11 @@ export function DayCard({ day, now }: { day: RenderedDay; now?: RomeNow }) {
 
         {day.slots.length > 0 && (
           <div>
+            {breakAt.has(-1) && <BreakRow label={breakAt.get(-1)!} duty={duty} />}
             {day.slots.map((s, idx) => (
               <div key={`${s.hour}-${s.class?.id ?? 'x'}`}>
                 <LessonRow slot={s} date={day.date} state={slotState(s.hour, day.date, now, nextHour)} />
-                {breaks[s.hour] && (idx < day.slots.length - 1 || duty) && <BreakRow label={breaks[s.hour]} duty={duty} />}
+                {breakAt.has(idx) && <BreakRow label={breakAt.get(idx)!} duty={duty} />}
               </div>
             ))}
           </div>
