@@ -1,9 +1,15 @@
+import { format, parseISO } from 'date-fns'
+import { it } from 'date-fns/locale'
+import { ChevronDown } from 'lucide-react'
+import { capFirst } from '@/components/utils'
 import { LIMITE_ORE, formatOre, type Comma, type Monte } from '@/lib/impegni'
 
 const COMMI: Array<{ key: Comma; label: string; hint: string }> = [
   { key: 'a', label: 'Collegio e programmazione', hint: 'Collegi, dipartimenti, famiglie' },
-  { key: 'b', label: 'Consigli di classe', hint: 'Consigli di classe, interclasse' },
+  { key: 'b', label: 'Consigli di classe', hint: 'Consigli di classe, GLO' },
 ]
+
+const giorno = (iso: string) => format(parseISO(iso), 'EEE d MMM', { locale: it })
 
 export function MonteOre({ data, anno }: { data: Record<Comma, Monte>; anno: string }) {
   const limit = LIMITE_ORE * 60
@@ -43,6 +49,31 @@ export function MonteOre({ data, anno }: { data: Record<Comma, Monte>; anno: str
                 {m.senzaOrario > 0 && ` · ${m.senzaOrario} senza orario, non contati`}
                 {m.assenze > 0 && ` · ${m.assenze} ${m.assenze === 1 ? 'assenza esclusa' : 'assenze escluse'}`}
               </p>
+              {m.voci.length > 0 && (
+                <details className="group">
+                  <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-small font-semibold text-accent [&::-webkit-details-marker]:hidden">
+                    Come si arriva a {formatOre(m.svolti)}
+                    <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden />
+                  </summary>
+                  <ol className="space-y-1.5 pb-1">
+                    {m.voci.map((v, i) => (
+                      <li key={`${v.date}-${v.title}-${i}`} className="flex items-baseline gap-3 text-small">
+                        <span className="w-20 shrink-0 text-muted">{capFirst(giorno(v.date))}</span>
+                        <span className={v.escluso ? 'min-w-0 flex-1 truncate text-muted' : 'min-w-0 flex-1 truncate text-ink'}>
+                          {v.title}
+                        </span>
+                        {v.escluso ? (
+                          <span className="shrink-0 text-muted">{v.escluso}</span>
+                        ) : (
+                          <span className="shrink-0 tabular text-muted">
+                            +{formatOre(v.min)} = <span className="font-semibold text-ink">{formatOre(v.cum)}</span>
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                </details>
+              )}
             </div>
           )
         })}

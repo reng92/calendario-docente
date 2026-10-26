@@ -7,6 +7,7 @@
 export const EVENT_KINDS: Record<string, { label: string; short: string; color: string }> = {
   collegio:     { label: 'Collegio docenti',     short: 'Collegio',     color: 'var(--ev-collegio)' },
   cdc:          { label: 'Consiglio di classe',  short: 'CdC',          color: 'var(--ev-cdc)' },
+  glo:          { label: 'GLO (inclusione)',     short: 'GLO',          color: 'var(--ev-glo)' },
   dipartimento: { label: 'Dipartimento',         short: 'Dipartimento', color: 'var(--ev-dipartimento)' },
   colloqui:     { label: 'Colloqui',             short: 'Colloqui',     color: 'var(--ev-colloqui)' },
   scrutini:     { label: 'Scrutini',             short: 'Scrutini',     color: 'var(--ev-scrutini)' },
@@ -44,7 +45,10 @@ export function breakPositions(hours: number[], breaks: Record<number, string>, 
   return pos
 }
 
-export const EVENT_KIND_OPTIONS = Object.entries(EVENT_KINDS).map(([value, k]) => ({ value, label: k.label }))
+/** Tipi del modulo impegni: la sorveglianza è un turno in ricreazione, non un impegno pomeridiano */
+export const EVENT_KIND_OPTIONS = Object.entries(EVENT_KINDS)
+  .filter(([value]) => !isSorveglianza(value))
+  .map(([value, k]) => ({ value, label: k.label }))
 
 export function eventColor(kind: string): string {
   return EVENT_KINDS[kind]?.color ?? 'var(--muted)'

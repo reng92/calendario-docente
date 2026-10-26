@@ -3,7 +3,8 @@
  * (CCNL scuola, art. 29 c. 3):
  * - lett. a: collegio docenti, programmazione/verifica (dipartimenti),
  *   informazione alle famiglie — fino a 40 ore annue
- * - lett. b: consigli di classe — fino a 40 ore annue
+ * - lett. b: consigli di classe, compresi i GLO per l'inclusione (sono
+ *   articolazioni del consiglio di classe) — fino a 40 ore annue
  * Scrutini ed esami (lett. c) non rientrano nel tetto e non si contano.
  */
 
@@ -16,6 +17,7 @@ const COMMA_BY_KIND: Record<string, Comma> = {
   dipartimento: 'a',
   colloqui: 'a',
   cdc: 'b',
+  glo: 'b',
 }
 
 export function commaOf(kind: string): Comma | null {
@@ -40,29 +42,43 @@ export function durataMin(startTime: string | null, endTime: string | null): num
   return Math.max(0, toMin(endTime) - toMin(startTime))
 }
 
-export type Monte = { svolti: number; programmati: number; senzaOrario: number; assenze: number }
+/** Impegno trascorso nel dettaglio delle ore svolte; `escluso` = non entra nel totale */
+export type Voce = {
+  date: string; title: string; min: number; cum: number
+  escluso: 'assente' | 'senza orario' | null
+}
+
+export type Monte = { svolti: number; programmati: number; senzaOrario: number; assenze: number; voci: Voce[] }
 
 /** attended = false: impegno a cui non si è partecipato, fuori dal conteggio. null = presenza presunta */
 type Presenza = { attended?: boolean | null }
 
-/** Minuti svolti (impegno terminato) e programmati per comma, nell'anno scolastico di `now.date` */
+/**
+ * Minuti svolti (impegno terminato) e programmati per comma, nell'anno
+ * scolastico di `now.date`, con l'elenco degli impegni trascorsi in ordine
+ * di data e il progressivo che porta al totale svolto.
+ */
 export function monteOre(
-  rows: Array<{ date: string; startTime: string | null; endTime: string | null; kind: string } & Presenza>,
+  rows: Array<{ date: string; startTime: string | null; endTime: string | null; kind: string; title: string } & Presenza>,
   now: { date: string; minutes: number },
 ): Record<Comma, Monte> {
   const as = annoScolastico(now.date)
   const out: Record<Comma, Monte> = {
-    a: { svolti: 0, programmati: 0, senzaOrario: 0, assenze: 0 },
-    b: { svolti: 0, programmati: 0, senzaOrario: 0, assenze: 0 },
+    a: { svolti: 0, programmati: 0, senzaOrario: 0, assenze: 0, voci: [] },
+    b: { svolti: 0, programmati: 0, senzaOrario: 0, assenze: 0, voci: [] },
   }
-  for (const r of rows) {
+  const sorted = [...rows].sort((x, y) => x.date.localeCompare(y.date) || (x.startTime ?? '').localeCompare(y.startTime ?? ''))
+  for (const r of sorted) {
     const c = commaOf(r.kind)
     if (!c || r.date < as.from || r.date > as.to) continue
-    if (r.attended === false) { out[c].assenze++; continue }
     const min = durataMin(r.startTime, r.endTime)
-    if (min === 0) { out[c].senzaOrario++; continue }
-    const done = r.date < now.date || (r.date === now.date && toMin(r.endTime!) <= now.minutes)
-    if (done) out[c].svolti += min
+    const done = r.date < now.date || (r.date === now.date && toMin(r.endTime ?? '00:00') <= now.minutes)
+    const voce = (escluso: Voce['escluso']) => {
+      if (done) out[c].voci.push({ date: r.date, title: r.title, min, cum: out[c].svolti, escluso })
+    }
+    if (r.attended === false) { out[c].assenze++; voce('assente'); continue }
+    if (min === 0) { out[c].senzaOrario++; voce('senza orario'); continue }
+    if (done) { out[c].svolti += min; voce(null) }
     else out[c].programmati += min
   }
   return out

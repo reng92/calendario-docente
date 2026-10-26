@@ -4,6 +4,7 @@ import { asc } from 'drizzle-orm'
 import { AppHeader } from '@/components/AppHeader'
 import { FormSheet } from '@/components/FormSheet'
 import { getRomeNow } from '@/components/now'
+import { isSorveglianza } from '@/components/tokens'
 import { MeetingForm } from './MeetingForm'
 import { MeetingRow } from './MeetingRow'
 import { MonteOre } from './MonteOre'
@@ -16,7 +17,9 @@ export const dynamic = 'force-dynamic'
 
 export default async function MeetingsPage() {
   const now = getRomeNow()
-  const rows = await db.select().from(meetings).orderBy(asc(meetings.date), asc(meetings.startTime))
+  // i turni di sorveglianza restano in Oggi e nel calendario, sulla riga dell'intervallo
+  const rows = (await db.select().from(meetings).orderBy(asc(meetings.date), asc(meetings.startTime)))
+    .filter(r => !isSorveglianza(r.kind))
   const upcoming = rows.filter(r => r.date >= now.date)
   const past = rows.filter(r => r.date < now.date).reverse()
 
@@ -38,7 +41,7 @@ export default async function MeetingsPage() {
         {rows.length === 0 && (
           <div className="rounded-card border border-line bg-surface px-4 py-8 text-center">
             <p className="text-heading text-ink">Nessun impegno registrato</p>
-            <p className="mt-1 text-small text-muted">Aggiungi collegi, consigli di classe, scrutini e colloqui: compaiono nel calendario e in Oggi.</p>
+            <p className="mt-1 text-small text-muted">Aggiungi collegi, consigli di classe, GLO, scrutini e colloqui: compaiono nel calendario e in Oggi.</p>
           </div>
         )}
         {upcoming.length > 0 && (

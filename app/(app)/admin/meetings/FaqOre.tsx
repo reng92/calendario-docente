@@ -30,6 +30,7 @@ const FAQ: Array<{ q: string; a: React.ReactNode }> = [
       <>
         <ul className="list-disc space-y-1 pl-5">
           <li>Partecipazione ai <span className="text-ink">consigli di classe</span>, sia ordinari sia straordinari</li>
+          <li><span className="text-ink">GLO</span> (Gruppi di lavoro operativi per l’inclusione) degli alunni delle tue classi: sono un’articolazione del consiglio di classe. Alcune scuole li contano a parte: verifica il piano delle attività</li>
         </ul>
         <p className="mt-2">Chi ha molte classi può superare le 40 ore: il collegio deve stabilire dei criteri per contenere l’impegno entro il tetto. Le ore oltre il limite non sono dovute, salvo accordo retribuito con il fondo d’istituto (FIS).</p>
       </>
@@ -49,7 +50,7 @@ const FAQ: Array<{ q: string; a: React.ReactNode }> = [
     q: 'Come li conta questa app?',
     a: (
       <>
-        <p><span className="text-ink">Collegio, Dipartimento e Colloqui</span> vanno nella lett. a, <span className="text-ink">Consiglio di classe</span> nella lett. b. Gli <span className="text-ink">Scrutini</span> non si contano.</p>
+        <p><span className="text-ink">Collegio, Dipartimento e Colloqui</span> vanno nella lett. a, <span className="text-ink">Consiglio di classe e GLO</span> nella lett. b. Gli <span className="text-ink">Scrutini</span> non si contano.</p>
         <p className="mt-2">Un impegno risulta svolto quando ne è passato l’orario di fine. Se è durato più o meno del previsto, correggi l’orario con la matita. Se non hai partecipato, spegni l’interruttore Presente: l’impegno resta in calendario ma non conta nelle ore. Registra come Colloqui solo gli incontri collettivi con le famiglie, non il ricevimento individuale.</p>
         <p className="mt-2">In caso di part-time o di servizio su più scuole, gli obblighi si riproporzionano: verifica con la segreteria.</p>
       </>
