@@ -28,7 +28,8 @@ export function AppHeader({ title, subtitle, back, action, children, wide }: Pro
           </Link>
         )}
         <div className="min-w-0 flex-1 py-2">
-          <h1 className="truncate text-title leading-tight text-ink">{title}</h1>
+          {/* Nelle sottopagine (freccia indietro + azione) il titolo grande verrebbe troncato */}
+          <h1 className={`truncate leading-tight text-ink ${back ? 'text-heading' : 'text-title'}`}>{title}</h1>
           {subtitle && <p className="truncate text-small text-muted">{subtitle}</p>}
         </div>
         {action && <div className="flex shrink-0 items-center">{action}</div>}

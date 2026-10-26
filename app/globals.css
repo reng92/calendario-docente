@@ -151,6 +151,20 @@
   input, select, textarea, button {
     font: inherit;
   }
+  /* Sensazione da app installata: niente flash grigio al tocco, niente doppio-tap zoom
+     sui controlli, niente selezione testo con pressione lunga su bottoni e tab bar */
+  a, button, summary, [role="tab"], [role="radio"] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  button, nav a, summary {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  /* Lo scroll dentro i fogli non deve trascinare la pagina sotto */
+  [role="dialog"] {
+    overscroll-behavior: contain;
+  }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
