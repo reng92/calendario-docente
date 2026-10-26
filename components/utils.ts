@@ -19,3 +19,9 @@ const twMerge = extendTailwindMerge({
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+/** Maiuscola solo sulla prima lettera ("lunedì 26 ottobre" → "Lunedì 26 ottobre").
+ *  La classe CSS `capitalize` la metterebbe su ogni parola, errore in italiano. */
+export function capFirst(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}

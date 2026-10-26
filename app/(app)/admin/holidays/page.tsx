@@ -6,7 +6,7 @@ import { it } from 'date-fns/locale'
 import { AppHeader } from '@/components/AppHeader'
 import { FormSheet } from '@/components/FormSheet'
 import { getRomeNow } from '@/components/now'
-import { cn } from '@/components/utils'
+import { capFirst, cn } from '@/components/utils'
 import { HolidayForm } from './HolidayForm'
 import { DeleteButton } from '../DeleteButton'
 import { deleteHoliday } from '../actions'
@@ -46,7 +46,7 @@ export default async function HolidaysPage() {
                   </div>
                   <div className="min-w-0 flex-1 py-1">
                     <p className="truncate text-body font-semibold text-ink">{r.label}</p>
-                    <p className="text-small capitalize text-muted">{format(d, 'EEEE yyyy', { locale: it })}</p>
+                    <p className="text-small text-muted">{capFirst(format(d, 'EEEE yyyy', { locale: it }))}</p>
                   </div>
                   <DeleteButton id={r.id} action={deleteHoliday} what="la festività" />
                 </li>

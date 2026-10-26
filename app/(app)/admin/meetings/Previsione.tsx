@@ -1,3 +1,4 @@
+import { capFirst } from '@/components/utils'
 import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { ChevronDown } from 'lucide-react'
@@ -45,7 +46,7 @@ export function Previsione({ data }: { data: Record<Comma, P> }) {
                   <ol className="space-y-1.5 pb-1">
                     {p.tappe.map(t => (
                       <li key={`${t.date}-${t.title}`} className="flex items-baseline gap-3 text-small">
-                        <span className="w-20 shrink-0 capitalize text-muted">{giorno(t.date)}</span>
+                        <span className="w-20 shrink-0 text-muted">{capFirst(giorno(t.date))}</span>
                         <span className="min-w-0 flex-1 truncate text-ink">
                           {t.title}
                           <span className="text-muted"> · {t.stima ? '~' : ''}{formatOre(t.min)}</span>

@@ -10,7 +10,7 @@ import { LessonRow, BreakRow, ClassChip } from '@/components/LessonRow'
 import { MeetingRow } from '@/components/MeetingRow'
 import { getRomeNow, slotState, breakAfter, formatMinutes, type RomeNow } from '@/components/now'
 import { breakPositions, isDisposizione, isSorveglianza, splitSorveglianza } from '@/components/tokens'
-import { cn } from '@/components/utils'
+import { capFirst, cn } from '@/components/utils'
 
 type Props = {
   today: RenderedDay | null
@@ -178,7 +178,7 @@ export function TodayView({ today, nextDay, initialNow }: Props) {
       <Hero state={state} day={today} />
 
       {dutyUpcoming && (
-        <p className="-mt-2 truncate px-1 text-[11px] leading-tight text-muted" title={dutyUpcoming.notes ?? undefined}>
+        <p className="-mt-2 truncate px-1 text-caption font-normal text-muted" title={dutyUpcoming.notes ?? undefined}>
           <span className="tabular">{dutyUpcoming.startTime?.slice(0, 5)}–{dutyUpcoming.endTime?.slice(0, 5)}</span>
           {' '}<span className="font-semibold" style={{ color: 'var(--ev-sorveglianza)' }}>Sorveglianza</span>
           {' '}{dutyUpcoming.title}
@@ -214,8 +214,8 @@ export function TodayView({ today, nextDay, initialNow }: Props) {
             <h2 className="text-heading text-ink">
               {nextDay.date === addDaysIso(now.date, 1) ? 'Domani' : 'Prossimo giorno di lezione'}
             </h2>
-            <span className="text-small capitalize text-muted">
-              {format(parseISO(nextDay.date), 'EEEE d MMMM', { locale: it })}
+            <span className="text-small text-muted">
+              {capFirst(format(parseISO(nextDay.date), 'EEEE d MMMM', { locale: it }))}
             </span>
           </div>
           <div className="rounded-card border border-line bg-surface px-2 py-1">

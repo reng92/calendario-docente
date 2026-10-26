@@ -8,7 +8,7 @@ import { DeleteButton } from '../DeleteButton'
 import { FormSheet } from '@/components/FormSheet'
 import { MeetingForm } from './MeetingForm'
 import { eventColor, eventLabel } from '@/components/tokens'
-import { cn } from '@/components/utils'
+import { capFirst, cn } from '@/components/utils'
 
 type Meeting = {
   id: string
@@ -28,7 +28,7 @@ export function MeetingRow({ m, past }: { m: Meeting; past?: boolean }) {
       <div aria-hidden className="h-10 w-1 shrink-0 rounded-full" style={{ background: eventColor(m.kind) }} />
       <div className="min-w-0 flex-1 py-1">
         <p className="text-small text-muted">
-          <span className="capitalize">{when}</span>
+          <span>{capFirst(when)}</span>
           {time && <span className="tabular"> · {time}</span>}
           <span> · {eventLabel(m.kind)}</span>
         </p>
