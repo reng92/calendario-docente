@@ -45,6 +45,8 @@ export function LessonRow({ slot, date, state = 'future', compact }: Props) {
   const start = stripLeadingZero(scan.effectiveStart[slot.hour] ?? '')
   const end = stripLeadingZero(scan.end[slot.hour] ?? '')
   const cot = slot.coteachers.map(c => c.name).join(', ')
+  // Le ore passate restano leggibili: testo in grigio pieno, si attenuano solo i colori di classe
+  const past = state === 'past'
 
   const secondary = [
     cot ? `con ${cot}` : null,
@@ -61,11 +63,10 @@ export function LessonRow({ slot, date, state = 'future', compact }: Props) {
           'group flex w-full items-stretch gap-3 rounded-control px-2 text-left transition-colors active:bg-surface-2',
           compact ? 'min-h-11 py-1' : 'min-h-12 py-1.5',
           state === 'current' && 'bg-accent-soft',
-          state === 'past' && 'opacity-55',
         )}
       >
         <div className={cn('flex w-11 shrink-0 flex-col justify-center tabular leading-none', compact ? 'text-caption' : '')}>
-          <span className={cn('text-small font-semibold', state === 'current' ? 'text-accent' : 'text-ink')}>{start}</span>
+          <span className={cn('text-small font-semibold', state === 'current' ? 'text-accent' : past ? 'text-muted' : 'text-ink')}>{start}</span>
           {!compact && <span className="mt-0.5 text-caption font-normal text-muted">{end}</span>}
         </div>
 
@@ -74,21 +75,27 @@ export function LessonRow({ slot, date, state = 'future', compact }: Props) {
           style={disp || isOverride ? undefined : classVar(slot.class?.color)}
           className={cn(
             'my-0.5 w-1 shrink-0 rounded-full',
+            past && 'opacity-40',
             disp ? 'border-l-2 border-dashed border-muted/50 bg-transparent' : isOverride ? 'bg-warn' : 'bar-class',
           )}
         />
 
-        <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+        <div className="@container flex min-w-0 flex-1 flex-col justify-center gap-0.5">
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
-            <ClassChip code={code} color={slot.class?.color} muted={disp} />
-            <span className={cn('min-w-0 flex-1 basis-auto break-words', disp ? 'text-small text-muted' : 'text-body font-semibold text-ink', isOverride && 'line-through decoration-muted/60 text-muted')}>
+            <ClassChip code={code} color={slot.class?.color} muted={disp} className={cn(past && 'opacity-70')} />
+            <span className={cn('min-w-0 flex-1 basis-auto break-words', disp ? 'text-small text-muted' : cn('text-body font-semibold', past ? 'text-muted' : 'text-ink'), isOverride && 'line-through decoration-muted/60 text-muted')}>
               {slot.subject ?? (isOverride ? '' : 'Lezione')}
             </span>
             {overrideLabel && (
               <span className="shrink-0 rounded-chip bg-warn-soft px-1.5 py-0.5 text-caption text-warn">{overrideLabel}</span>
             )}
             {slot.room && !disp && (
-              <span className="ml-auto shrink-0 pl-2 text-body font-semibold tabular text-ink">{slot.room}</span>
+              <span className={cn(
+                'ml-auto shrink-0 pl-2 text-body font-semibold tabular',
+                // colonne strette (settimana su desktop): l'aula va a capo a sinistra invece di restare isolata a destra
+                '@max-[14rem]:ml-0 @max-[14rem]:basis-full @max-[14rem]:pl-0 @max-[14rem]:text-small',
+                past ? 'text-muted' : 'text-ink',
+              )}>{slot.room}</span>
             )}
           </div>
           {secondary && !compact && (
@@ -106,10 +113,11 @@ export function BreakRow({ label, duty }: { label: string; duty?: { title: strin
     return (
       <div className="flex items-center gap-3 px-2 py-0.5" aria-label={`Intervallo ${label}, sorveglianza: ${duty.title}`}>
         <div className="w-11 shrink-0" />
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 text-[11px] leading-tight font-normal text-muted">
+        {/* flex-wrap: nelle colonne strette della settimana desktop il turno va a capo invece di uscire dalla card */}
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 text-caption leading-tight font-normal text-muted">
           <span className="tabular shrink-0">{label}</span>
           <span className="shrink-0 font-semibold" style={{ color: 'var(--ev-sorveglianza)' }}>Sorveglianza</span>
-          <span className="truncate" title={duty.notes ?? undefined}>{duty.title}</span>
+          <span className="min-w-0 truncate" title={duty.notes ?? undefined}>{duty.title}</span>
         </div>
       </div>
     )

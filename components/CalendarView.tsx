@@ -190,12 +190,11 @@ function MonthView({ month, byDate, now, onPickDay }: {
                 className={cn(
                   'flex min-h-20 flex-col items-stretch gap-1 border-r border-line p-1.5 text-left last:border-r-0 hover:bg-surface-2',
                   day?.isHoliday && 'bg-danger-soft/40',
-                  isPast && 'opacity-55',
                 )}
               >
                 <span className={cn(
                   'self-start rounded-full px-1.5 text-small tabular leading-6',
-                  isToday ? 'bg-accent font-semibold text-accent-ink' : 'text-ink',
+                  isToday ? 'bg-accent font-semibold text-accent-ink' : isPast ? 'text-muted' : 'text-ink',
                 )}>
                   {parseInt(iso.slice(8), 10)}
                 </span>
@@ -203,7 +202,7 @@ function MonthView({ month, byDate, now, onPickDay }: {
                   <span className="truncate text-caption font-normal text-danger">{day.holidayLabel}</span>
                 ) : (
                   <>
-                    <span className="flex flex-wrap gap-0.5">
+                    <span className={cn('flex flex-wrap gap-0.5', isPast && 'opacity-60')}>
                       {chips.map(s => (
                         <ClassChip key={s.class!.id} code={s.class!.code} color={s.class!.color} className="h-5 px-1 text-[12px]" />
                       ))}

@@ -40,14 +40,14 @@ export function DayCard({ day, now }: { day: RenderedDay; now?: RomeNow }) {
     <article
       aria-current={isToday ? 'date' : undefined}
       className={cn(
-        'overflow-hidden rounded-card border bg-surface',
+        // scroll-mt: scrollIntoView sulla card di oggi non deve finire sotto l'header sticky
+        'scroll-mt-[calc(4.5rem+env(safe-area-inset-top,0px))] overflow-hidden rounded-card border bg-surface',
         isToday ? 'border-accent' : 'border-line',
         day.isHoliday && 'bg-surface-2',
-        isPast && 'opacity-70',
       )}
     >
       <header className="flex items-center gap-3 px-4 pt-3 pb-2">
-        <div className={cn('text-display tabular leading-none', isToday ? 'text-accent' : 'text-ink')}>{dayNum}</div>
+        <div className={cn('text-display tabular leading-none', isToday ? 'text-accent' : isPast ? 'text-muted' : 'text-ink')}>{dayNum}</div>
         <div className="min-w-0 leading-tight">
           <div className={cn('text-heading', isToday ? 'text-accent' : 'text-ink')}>
             {isToday ? 'Oggi' : cap(weekdayName)}
