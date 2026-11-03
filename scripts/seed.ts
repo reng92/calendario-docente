@@ -37,6 +37,8 @@ const ORARIO_5OTT_TO = '2026-10-18'
 const ORARIO_19OTT_FROM = '2026-10-19'
 const ORARIO_19OTT_TO = '2026-10-25'
 const ORARIO_26OTT_FROM = '2026-10-26'
+const ORARIO_26OTT_TO = '2026-11-02'
+const ORARIO_3NOV_FROM = '2026-11-03'
 
 type SlotRow = [wd: number, hour: number, code: string, subject?: string, room?: string]
 type CotRow = [wd: number, hour: number, code: string, name: string]
@@ -221,6 +223,35 @@ async function seed() {
     [4, 6, '4IAN', 'TGPP', 'T.33-Lab-GrSt'],
   ]
 
+  console.log('📅 Orario dal 3 novembre...')
+  const orario3nov: SlotRow[] = [
+    // Lunedì
+    [0, 4, '3MAN', 'TEEA', 'T.28-Lab-El'],
+    [0, 5, '3MAN', 'TEEA', 'T.28-Lab-El'],
+    [0, 6, '4MAN', 'TTRI', 'T.37B-LabEIPC'],
+    [0, 7, '4MAN', 'TTRI', 'T.37B-LabEIPC'],
+    // Martedì
+    [1, 2, '3MAN', 'TEEA', 'T.28-Lab-El'],
+    [1, 3, '2MAN', 'FIS',  'T.15'],
+    [1, 4, '2MAN', 'FIS',  'T.15'],
+    [1, 5, '4IAN', 'TGPP', 'T.33-Lab-GrSt'],
+    [1, 6, '4IAN', 'TGPP', 'T.33-Lab-GrSt'],
+    // Mercoledì
+    [2, 5, '1MAN', 'TTRG', 'S.00-Lab-CV'],
+    [2, 6, '3MAN', 'TTRI', 'T.37B-LabEIPC'],
+    [2, 7, '3MAN', 'TTRI', 'T.37B-LabEIPC'],
+    // Giovedì
+    [3, 2, '1MAN', 'TTRG', 'S.00-Lab-CV'],
+    [3, 3, '1MAN', 'TTRG', 'S.00-Lab-CV'],
+    [3, 4, 'D'],
+    [3, 5, '3MAN', 'TTIM', 'T.37B-LabEIPC'],
+    [3, 6, '3MAN', 'TTIM', 'T.37B-LabEIPC'],
+    // Venerdì
+    [4, 3, '3MAN', 'TTIM', 'T.37A-LabElImp'],
+    [4, 4, '3MAN', 'TTIM', 'T.37A-LabElImp'],
+    [4, 5, 'D'],
+  ]
+
   const toRow =(validFrom: string, validTo: string | null) =>
     ([wd, h, code, subject, room]: SlotRow) => ({
       weekday: wd, hour: h, classId: byCode[code],
@@ -233,7 +264,8 @@ async function seed() {
     ...orario28.map(toRow(ORARIO_28_FROM, ORARIO_28_TO)),
     ...orario5ott.map(toRow(ORARIO_5OTT_FROM, ORARIO_5OTT_TO)),
     ...orario19ott.map(toRow(ORARIO_19OTT_FROM, ORARIO_19OTT_TO)),
-    ...orario26ott.map(toRow(ORARIO_26OTT_FROM, null)),
+    ...orario26ott.map(toRow(ORARIO_26OTT_FROM, ORARIO_26OTT_TO)),
+    ...orario3nov.map(toRow(ORARIO_3NOV_FROM, null)),
   ])
 
   console.log('👥 Compresenze...')
@@ -300,6 +332,19 @@ async function seed() {
     [4, 3, '3MAN', 'Lavoro'], [4, 4, '3MAN', 'Lavoro'], [4, 5, '4IAN', 'Marinelli'], [4, 6, '4IAN', 'Marinelli'],
     // ore "D": nessun co-docente
   ]
+  const cot3nov: CotRow[] = [
+    // Lunedì
+    [0, 4, '3MAN', 'Lavoro'], [0, 5, '3MAN', 'Lavoro'], [0, 6, '4MAN', 'Lavoro'], [0, 7, '4MAN', 'Lavoro'],
+    // Martedì
+    [1, 2, '3MAN', 'Lavoro'], [1, 3, '2MAN', 'Micciché'], [1, 4, '2MAN', 'Micciché'], [1, 5, '4IAN', 'Marinelli'], [1, 6, '4IAN', 'Marinelli'],
+    // Mercoledì
+    [2, 5, '1MAN', 'Nencetti'], [2, 6, '3MAN', 'Lavoro'], [2, 7, '3MAN', 'Lavoro'],
+    // Giovedì
+    [3, 2, '1MAN', 'Nencetti'], [3, 3, '1MAN', 'Nencetti'], [3, 5, '3MAN', 'Valente'], [3, 6, '3MAN', 'Valente'],
+    // Venerdì
+    [4, 3, '3MAN', 'Valente'], [4, 4, '3MAN', 'Valente'],
+    // ore "D": nessun co-docente
+  ]
   const toCot = (validFrom: string, validTo: string | null) =>
     ([wd, h, code, name]: CotRow) => ({
       classId: byCode[code], weekday: wd, hour: h, teacherName: name, role: 'altro',
@@ -310,7 +355,8 @@ async function seed() {
     ...cot28.map(toCot(ORARIO_28_FROM, ORARIO_28_TO)),
     ...cot5ott.map(toCot(ORARIO_5OTT_FROM, ORARIO_5OTT_TO)),
     ...cot19ott.map(toCot(ORARIO_19OTT_FROM, ORARIO_19OTT_TO)),
-    ...cot26ott.map(toCot(ORARIO_26OTT_FROM, null)),
+    ...cot26ott.map(toCot(ORARIO_26OTT_FROM, ORARIO_26OTT_TO)),
+    ...cot3nov.map(toCot(ORARIO_3NOV_FROM, null)),
   ])
 
   console.log('🚫 Festività e sospensioni (calendario scolastico 2026/27 — sedi di Roma)...')
